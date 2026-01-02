@@ -9,7 +9,7 @@ export default function Home() {
       {/* Hero Section */}
       <section id="hero" className="h-screen flex items-center justify-center border-b border-white/10">
         <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-center">
-          WE DESIGN<br />
+          WE DESIGN!<br />
           <span className="text-primary">SIGNS</span> THAT<br />
           MATTER.
         </h1>

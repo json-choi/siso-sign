@@ -20,7 +20,7 @@ export default function Home() {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold mb-8">About Us</h2>
           <p className="text-xl md:text-3xl leading-relaxed max-w-4xl text-gray-300">
-            siso-sign is a creative agency dedicated to crafting visual identities that leave a lasting impression. We blend strategy, design, and technology to build brands that stand out.
+            난똑똑하다
           </p>
         </div>
       </section>

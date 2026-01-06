@@ -32,10 +32,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/40 text-white p-2 rounded hover:bg-black/60">▶</button>
             </div>
 
-            <div className="overflow-x-auto py-2">
-              <div className="flex gap-4">
+            <div className="w-full">
+              <div className="grid grid-cols-6 gap-4">
                 {images.map((src) => (
-                  <div key={src} className={`flex-shrink-0 w-40 h-28 rounded-lg overflow-hidden cursor-pointer border ${selected===src? 'border-primary': 'border-transparent'}`} onClick={() => setSelected(src)}>
+                  <div key={src} className={`w-full h-28 rounded-lg overflow-hidden cursor-pointer border ${selected===src ? 'border-primary' : 'border-transparent'}`} onClick={() => setSelected(src)}>
                     <img src={src} alt={src} className="w-full h-full object-cover" />
                   </div>
                 ))}

@@ -4,6 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { Cal_Sans } from 'next/font/google';
+
+const calSans = Cal_Sans({
+  variable: '--font-cal-sans',
+  subsets: ['latin'],
+});
 
 const navItems = [
   { name: 'Work', href: '#work' },
@@ -46,7 +52,11 @@ export default function Header() {
       }`}
     >
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold tracking-tighter">
+        <Link
+          href="/"
+          className={`${calSans.variable} text-2xl font-bold tracking-tighter`}
+          style={{ fontFamily: 'var(--font-cal-sans)' }}
+        >
           siso-sign
         </Link>
 

@@ -1,7 +1,27 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Image from "next/image";
 
 export default function Home() {
+  const projects = [
+    {
+      title: "Project 1",
+      image: "/project1.png", // Make sure project1.jpg is in the 'public' folder
+    },
+    {
+      title: "Project 2",
+      image: "/project2.jpg", // Make sure project2.jpg is in the 'public' folder
+    },
+    {
+      title: "Project 3",
+      image: "/project3.png", // Make sure project3.png is in the 'public' folder
+    },
+    {
+      title: "Project 4",
+      image: "/project4.gif", // Make sure project4.gif is in the 'public' folder
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
       <Header />
@@ -30,11 +50,17 @@ export default function Home() {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold mb-12">Selected Work</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Placeholders for projects */}
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="aspect-video bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer group relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-2xl font-bold">Project {item}</span>
+            {projects.map((project) => (
+              <div key={project.title} className="bg-white/5 rounded-lg group relative overflow-hidden cursor-pointer">
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  width={800}
+                  height={450}
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="text-2xl font-bold text-white">{project.title}</span>
                 </div>
               </div>
             ))}

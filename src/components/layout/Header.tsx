@@ -6,8 +6,8 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navItems = [
-  { name: 'Work', href: '/work' },
   { name: 'About', href: '#about' },
+  { name: 'Work', href: '/work' },
   { name: 'Services', href: '#services' },
   { name: 'Contact', href: '#contact' },
 ];

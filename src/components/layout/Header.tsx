@@ -48,7 +48,7 @@ export default function Header() {
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         <Link
           href="/"
-          className="text-3xl md:text-4xl font-bold leading-none"
+          className="text-3xl md:text-4xl font-bold leading-none text-primary"
           style={{ fontFamily: 'var(--font-cal-sans)', letterSpacing: '0.03em' }}
         >
           siso-sign

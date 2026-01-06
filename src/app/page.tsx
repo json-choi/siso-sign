@@ -40,7 +40,7 @@ export default function Home() {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold mb-8">About Us</h2>
           <p className="text-xl md:text-3xl leading-relaxed max-w-4xl text-gray-300" style={{ fontFamily: 'var(--font-cal-sans)' }}>
-            <span className="whitespace-nowrap">siso-sign&nbsp;은 공간의 가치를 높이는 시각적 정체성을 만드는 비주얼 솔루션 파트너입니다.</span>
+            <span className="whitespace-nowrap text-primary">siso-sign&nbsp;은 공간의 가치를 높이는 시각적 정체성을 만드는 비주얼 솔루션 파트너입니다.</span>
             <br />
             <span className="whitespace-nowrap">전략, 디자인, 그리고 기술의 조화를 통해 상상하던 브랜드의 모습을 현실로 구현합니다.</span>
           </p>

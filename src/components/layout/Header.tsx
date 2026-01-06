@@ -49,7 +49,7 @@ export default function Header() {
         <Link
           href="/"
           className="text-3xl md:text-4xl font-bold leading-none"
-          style={{ fontFamily: 'var(--font-cal-sans)', letterSpacing: '0.1em' }}
+          style={{ fontFamily: 'var(--font-cal-sans)', letterSpacing: '0.03em' }}
         >
           siso-sign
         </Link>

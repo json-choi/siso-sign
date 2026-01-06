@@ -91,8 +91,8 @@ export default function Home() {
       <section id="contact" className="min-h-[50vh] py-20 px-6 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-4xl md:text-6xl font-bold mb-8">Let's work together</h2>
-          <a href="mailto:hello@siso-sign.com" className="text-xl md:text-2xl text-primary hover:underline">
-            hello@siso-sign.com
+          <a href="mailto:siso-sign@naver.com" className="text-xl md:text-2xl text-primary hover:underline">
+            siso-sign@naver.com
           </a>
         </div>
       </section>

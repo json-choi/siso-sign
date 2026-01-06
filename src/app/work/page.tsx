@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import Link from 'next/link';
 
 export default function WorkPage() {
   const projects = Array.from({ length: 30 }).map((_, i) => ({
@@ -16,9 +17,11 @@ export default function WorkPage() {
           <h2 className="text-4xl font-bold mb-12">Selected Work</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {projects.map((p) => (
-              <div key={p.id} className="bg-white/5 rounded-lg overflow-hidden p-6 flex flex-col justify-end h-56">
-                <div className="text-lg font-semibold">{p.title}</div>
-              </div>
+              <Link key={p.id} href={`/work/${p.id}`} className="block">
+                <div className="bg-white/5 rounded-lg overflow-hidden p-6 flex flex-col justify-end h-56 hover:scale-105 transition-transform">
+                  <div className="text-lg font-semibold">{p.title}</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -67,6 +67,13 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <span className="text-2xl font-bold text-white">{project.title}</span>
                 </div>
+
+                {/* more link for Project 3 and 4 */}
+                {(project.title === 'Project 3' || project.title === 'Project 4') && (
+                  <div className="p-4 text-center">
+                    <a href="/work" className="text-white hover:underline">more</a>
+                  </div>
+                )}
               </div>
             ))}
           </div>

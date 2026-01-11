@@ -1,25 +1,71 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
-export default function WorkPage() {
-  const projects = Array.from({ length: 30 }).map((_, i) => ({
-    id: i + 1,
-    title: `Project ${i + 1}`,
-  }));
+export const revalidate = 0;
+
+async function getPortfolios() {
+  const { data } = await supabase
+    .from('portfolios')
+    .select('*')
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true });
+  
+  return data || [];
+}
+
+export default async function WorkPage() {
+  const portfolios = await getPortfolios();
+
+  const fallbackProjects = [
+    { id: '1', title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인', image_url: '/project1.png' },
+    { id: '2', title: 'Project 2', category: 'Exhibition', description: '전시 공간 사이니지', image_url: '/project2.jpg' },
+    { id: '3', title: 'Project 3', category: 'Signage', description: '통합 사인 시스템', image_url: '/project3.png' },
+    { id: '4', title: 'Project 4', category: 'Branding', description: '모션 브랜딩', image_url: '/project4.gif' },
+  ];
+
+  const projects = portfolios.length > 0 ? portfolios : fallbackProjects;
 
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
       <Header />
 
-      <section className="min-h-screen py-20 px-6 border-b border-white/10">
+      <section className="pt-32 pb-20 px-6">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold mb-12">Selected Work</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {projects.map((p) => (
-              <Link key={p.id} href={`/work/${p.id}`} className="block">
-                <div className="bg-white/5 rounded-lg overflow-hidden p-6 flex flex-col justify-end h-56 hover:scale-105 transition-transform">
-                  <div className="text-lg font-semibold">{p.title}</div>
+          <div className="mb-16">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4">Our Work</h1>
+            <p className="text-xl text-gray-400 max-w-2xl">
+              공간에 생명을 불어넣는 사인 디자인. 브랜드의 첫인상을 만듭니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <Link 
+                key={project.id} 
+                href={`/work/${project.id}`}
+                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
+              >
+                {project.image_url && (
+                  <Image
+                    src={project.image_url}
+                    alt={project.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                    {project.category}
+                  </span>
+                  <h3 className="text-xl font-bold text-white mt-1">{project.title}</h3>
+                  <p className="text-sm text-gray-300 mt-2 line-clamp-2">{project.description}</p>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300">
+                  <h3 className="text-lg font-semibold text-white">{project.title}</h3>
                 </div>
               </Link>
             ))}

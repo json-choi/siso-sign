@@ -1,26 +1,34 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
-export default function Home() {
-  const projects = [
-    {
-      title: "Project 1",
-      image: "/project1.png", // Make sure project1.jpg is in the 'public' folder
-    },
-    {
-      title: "Project 2",
-      image: "/project2.jpg", // Make sure project2.jpg is in the 'public' folder
-    },
-    {
-      title: "Project 3",
-      image: "/project3.png", // Make sure project3.png is in the 'public' folder
-    },
-    {
-      title: "Project 4",
-      image: "/project4.gif", // Make sure project4.gif is in the 'public' folder
-    },
+export const revalidate = 0; // 캐싱 비활성화 - 항상 최신 데이터
+
+async function getPortfolios() {
+  const { data } = await supabase
+    .from('portfolios')
+    .select('*')
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+    .limit(4);
+  
+  return data || [];
+}
+
+export default async function Home() {
+  const portfolios = await getPortfolios();
+
+  const fallbackProjects = [
+    { id: "1", title: "Project 1", category: "Branding", description: "브랜드 아이덴티티 디자인 프로젝트", image_url: "/project1.png" },
+    { id: "2", title: "Project 2", category: "Exhibition", description: "전시 공간 사이니지 시스템", image_url: "/project2.jpg" },
+    { id: "3", title: "Project 3", category: "Signage", description: "상업 공간 통합 사인 시스템", image_url: "/project3.png" },
+    { id: "4", title: "Project 4", category: "Branding", description: "모션 그래픽 브랜딩", image_url: "/project4.gif" },
   ];
+
+  const projects = portfolios.length > 0 ? portfolios : fallbackProjects;
 
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
@@ -53,28 +61,38 @@ export default function Home() {
       {/* Work Section */}
       <section id="work" className="min-h-screen py-20 px-6 border-b border-white/10">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold mb-12">Selected Work</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((project) => (
-              <div key={project.title} className="bg-white/5 rounded-lg group relative overflow-hidden cursor-pointer">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  width={800}
-                  height={450}
-                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-2xl font-bold text-white">{project.title}</span>
-                </div>
-
-                {/* more link for Project 3 and 4 */}
-                {(project.title === 'Project 3' || project.title === 'Project 4') && (
-                  <div className="p-4 text-center">
-                    <a href="/work" className="text-white hover:underline">more</a>
-                  </div>
+          <div className="flex items-end justify-between mb-12">
+            <h2 className="text-4xl font-bold">Selected Work</h2>
+            <Link 
+              href="/work" 
+              className="group flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projects.slice(0, 4).map((project) => (
+              <Link 
+                key={project.id} 
+                href={`/work/${project.id}`}
+                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
+              >
+                {project.image_url && (
+                  <Image
+                    src={project.image_url}
+                    alt={project.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 )}
-              </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <span className="text-xs font-medium text-primary uppercase tracking-wider">{project.category}</span>
+                  <h3 className="text-xl font-bold text-white mt-1">{project.title}</h3>
+                  <p className="text-sm text-gray-300 mt-2">{project.description}</p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

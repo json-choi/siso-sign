@@ -1,0 +1,37 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createAdminClient } from '@/lib/supabase';
+
+export async function GET() {
+  const supabase = createAdminClient();
+  
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('*')
+    .order('key', { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}
+
+export async function PUT(request: NextRequest) {
+  const supabase = createAdminClient();
+  const body = await request.json();
+
+  const { key, value } = body;
+
+  const { data, error } = await supabase
+    .from('site_settings')
+    .update({ value })
+    .eq('key', key)
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}

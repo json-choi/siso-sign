@@ -23,6 +23,10 @@ const calSans = localFont({
 export const metadata: Metadata = {
   title: "siso-sign | Creative Design Agency",
   description: "We create signs that matter. Branding, Web Design, and Signage.",
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({

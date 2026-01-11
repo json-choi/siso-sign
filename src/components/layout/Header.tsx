@@ -2,21 +2,31 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navItems = [
-  { name: 'About', href: '#about' },
-  { name: 'Work', href: '/work' },
-  { name: 'Services', href: '#services' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'About', href: '/#about' },
+  { name: 'Work', href: '/#work' },
+  { name: 'Services', href: '/#services' },
+  { name: 'Contact', href: '/#contact' },
 ];
 
 export default function Header() {
+  const pathname = usePathname();
+  const isHome = pathname === '/';
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const getHref = (href: string) => {
+    if (isHome && href.startsWith('/#')) {
+      return href.slice(1);
+    }
+    return href;
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -59,7 +69,7 @@ export default function Header() {
           {navItems.map((item) => (
             <Link
               key={item.name}
-              href={item.href}
+              href={getHref(item.href)}
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               {item.name}
@@ -87,7 +97,7 @@ export default function Header() {
           {navItems.map((item) => (
             <Link
               key={item.name}
-              href={item.href}
+              href={getHref(item.href)}
               className="text-lg font-medium hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >

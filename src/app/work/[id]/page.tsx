@@ -1,15 +1,48 @@
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
-import ImageCarousel from '@/components/ImageCarousel';
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { notFound } from "next/navigation";
+import ImageCarousel from "@/components/ImageCarousel";
+import type { Metadata } from "next";
 
 export const revalidate = 0;
 
 type PageProps = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const { data: portfolio } = await supabase
+    .from("portfolios")
+    .select("title, description, category, image_url")
+    .eq("id", id)
+    .eq("is_published", true)
+    .single();
+
+  if (!portfolio) {
+    return {
+      title: "프로젝트",
+    };
+  }
+
+  return {
+    title: portfolio.title,
+    description: portfolio.description || `${portfolio.title} - 시소사인 포트폴리오`,
+    openGraph: {
+      title: `${portfolio.title} | 시소사인`,
+      description: portfolio.description || `${portfolio.title} - 시소사인 포트폴리오`,
+      url: `https://siso-sign.com/work/${id}`,
+      images: portfolio.image_url
+        ? [{ url: portfolio.image_url, alt: portfolio.title }]
+        : undefined,
+    },
+    alternates: {
+      canonical: `https://siso-sign.com/work/${id}`,
+    },
+  };
+}
 
 async function getPortfolio(id: string) {
   const { data } = await supabase

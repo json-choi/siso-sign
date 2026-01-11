@@ -78,12 +78,23 @@ export default function SettingsPage() {
     return <div className="text-white">로딩 중...</div>;
   }
 
+  const groupOrder = [
+    '사이트 정보',
+    '히어로 섹션',
+    '소개',
+    '연락처',
+    '사업자 정보',
+    '푸터',
+    '기타',
+  ];
+
   const groupedSettings = settings.reduce((acc, setting) => {
     let group = '기타';
     if (setting.key.startsWith('site_')) group = '사이트 정보';
     else if (setting.key.startsWith('hero_')) group = '히어로 섹션';
     else if (setting.key.startsWith('about_')) group = '소개';
     else if (setting.key.startsWith('contact_')) group = '연락처';
+    else if (setting.key.startsWith('business_')) group = '사업자 정보';
     else if (setting.key.startsWith('footer_')) group = '푸터';
     
     if (!acc[group]) acc[group] = [];
@@ -91,12 +102,16 @@ export default function SettingsPage() {
     return acc;
   }, {} as Record<string, SiteSetting[]>);
 
+  const sortedGroups = Object.entries(groupedSettings).sort(
+    ([a], [b]) => groupOrder.indexOf(a) - groupOrder.indexOf(b)
+  );
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-white mb-8">사이트 설정</h1>
 
       <div className="space-y-8">
-        {Object.entries(groupedSettings).map(([group, groupSettings]) => (
+        {sortedGroups.map(([group, groupSettings]) => (
           <div key={group} className="bg-white/5 border border-white/10 rounded-xl p-6">
             <h2 className="text-xl font-bold text-white mb-6">{group}</h2>
             <div className="space-y-6">

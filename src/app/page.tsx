@@ -5,127 +5,247 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export const revalidate = 0; // 캐싱 비활성화 - 항상 최신 데이터
+export const revalidate = 0;
+
+async function getBusinessSettings() {
+  const { data } = await supabase
+    .from("site_settings")
+    .select("key, value")
+    .in("key", [
+      "business_name",
+      "business_address",
+      "business_phone",
+      "business_email",
+    ]);
+
+  const settings: Record<string, string> = {};
+  data?.forEach((item) => {
+    if (item.value) settings[item.key] = item.value;
+  });
+  return settings;
+}
+
+function buildJsonLd(settings: Record<string, string>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://siso-sign.com",
+    name: settings.business_name || "시소사인",
+    alternateName: "siso-sign",
+    description:
+      "시소사인은 공간의 가치를 높이는 간판 제작, 사이니지 디자인, 브랜딩 전문 에이전시입니다.",
+    url: "https://siso-sign.com",
+    logo: "https://siso-sign.com/logo.jpg",
+    image: "https://siso-sign.com/logo.jpg",
+    email: settings.business_email || "siso-sign@naver.com",
+    telephone: settings.business_phone || undefined,
+    address: settings.business_address
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: settings.business_address,
+          addressCountry: "KR",
+        }
+      : undefined,
+    priceRange: "$$",
+    areaServed: {
+      "@type": "Country",
+      name: "대한민국",
+    },
+    serviceType: ["간판 제작", "사이니지 디자인", "브랜딩", "공간 디자인"],
+    sameAs: [],
+  };
+}
 
 async function getPortfolios() {
   const { data } = await supabase
-    .from('portfolios')
-    .select('*')
-    .eq('is_published', true)
-    .order('sort_order', { ascending: true })
+    .from("portfolios")
+    .select("*")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true })
     .limit(4);
-  
+
   return data || [];
 }
 
 export default async function Home() {
-  const portfolios = await getPortfolios();
+  const [portfolios, businessSettings] = await Promise.all([
+    getPortfolios(),
+    getBusinessSettings(),
+  ]);
+
+  const jsonLd = buildJsonLd(businessSettings);
 
   const fallbackProjects = [
-    { id: "1", title: "Project 1", category: "Branding", description: "브랜드 아이덴티티 디자인 프로젝트", image_url: "/project1.png" },
-    { id: "2", title: "Project 2", category: "Exhibition", description: "전시 공간 사이니지 시스템", image_url: "/project2.jpg" },
-    { id: "3", title: "Project 3", category: "Signage", description: "상업 공간 통합 사인 시스템", image_url: "/project3.png" },
-    { id: "4", title: "Project 4", category: "Branding", description: "모션 그래픽 브랜딩", image_url: "/project4.gif" },
+    {
+      id: "1",
+      title: "Project 1",
+      category: "Branding",
+      description: "브랜드 아이덴티티 디자인 프로젝트",
+      image_url: "/project1.png",
+    },
+    {
+      id: "2",
+      title: "Project 2",
+      category: "Exhibition",
+      description: "전시 공간 사이니지 시스템",
+      image_url: "/project2.jpg",
+    },
+    {
+      id: "3",
+      title: "Project 3",
+      category: "Signage",
+      description: "상업 공간 통합 사인 시스템",
+      image_url: "/project3.png",
+    },
+    {
+      id: "4",
+      title: "Project 4",
+      category: "Branding",
+      description: "모션 그래픽 브랜딩",
+      image_url: "/project4.gif",
+    },
   ];
 
   const projects = portfolios.length > 0 ? portfolios : fallbackProjects;
 
   return (
-    <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
-      <Header />
-      
-      {/* Hero Section */}
-      <section id="hero" className="h-screen flex items-center justify-center border-b border-white/10">
-        <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-center">
-          WE DESIGN!<br />
-          <span className="text-primary">SIGNS</span> THAT<br />
-          MATTER.
-        </h1>
-      </section>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
+        <Header />
 
-      {/* About Section */}
-      <section id="about" className="min-h-screen py-20 px-6 flex items-center border-b border-white/10">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold mb-8">About Us</h2>
-          <p className="text-xl md:text-3xl leading-relaxed max-w-4xl" style={{ fontFamily: 'var(--font-cal-sans)' }}>
-            <span>
-              <span className="text-primary">siso-sign&nbsp;</span>
-              <span className="text-white">은 공간의 가치를 높이는 시각적 정체성을 만드는 비주얼 솔루션 파트너입니다.</span>
-            </span>
+        <section
+          id="hero"
+          className="h-screen flex items-center justify-center border-b border-white/10"
+        >
+          <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-center">
+            WE DESIGN!
             <br />
-            <span className="text-white">전략, 디자인, 그리고 기술의 조화를 통해 상상하던 브랜드의 모습을 현실로 구현합니다.</span>
-          </p>
-        </div>
-      </section>
+            <span className="text-primary">SIGNS</span> THAT
+            <br />
+            MATTER.
+          </h1>
+        </section>
 
-      {/* Work Section */}
-      <section id="work" className="min-h-screen py-20 px-6 border-b border-white/10">
-        <div className="container mx-auto">
-          <div className="flex items-end justify-between mb-12">
-            <h2 className="text-4xl font-bold">Selected Work</h2>
-            <Link 
-              href="/work" 
-              className="group flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
+        <section
+          id="about"
+          className="min-h-screen py-20 px-6 flex items-center border-b border-white/10"
+        >
+          <div className="container mx-auto">
+            <h2 className="text-4xl font-bold mb-8">About Us</h2>
+            <p
+              className="text-xl md:text-3xl leading-relaxed max-w-4xl"
+              style={{ fontFamily: "var(--font-cal-sans)" }}
             >
-              <span>View All</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+              <span>
+                <span className="text-primary">siso-sign&nbsp;</span>
+                <span className="text-white">
+                  은 공간의 가치를 높이는 시각적 정체성을 만드는 비주얼 솔루션
+                  파트너입니다.
+                </span>
+              </span>
+              <br />
+              <span className="text-white">
+                전략, 디자인, 그리고 기술의 조화를 통해 상상하던 브랜드의 모습을
+                현실로 구현합니다.
+              </span>
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.slice(0, 4).map((project) => (
-              <Link 
-                key={project.id} 
-                href={`/work/${project.id}`}
-                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
+        </section>
+
+        <section
+          id="work"
+          className="min-h-screen py-20 px-6 border-b border-white/10"
+        >
+          <div className="container mx-auto">
+            <div className="flex items-end justify-between mb-12">
+              <h2 className="text-4xl font-bold">Selected Work</h2>
+              <Link
+                href="/work"
+                className="group flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
               >
-                {project.image_url && (
-                  <Image
-                    src={project.image_url}
-                    alt={project.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                  <span className="text-xs font-medium text-primary uppercase tracking-wider">{project.category}</span>
-                  <h3 className="text-xl font-bold text-white mt-1">{project.title}</h3>
-                  <p className="text-sm text-gray-300 mt-2">{project.description}</p>
-                </div>
+                <span>View All</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-            ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projects.slice(0, 4).map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/work/${project.id}`}
+                  className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
+                >
+                  {project.image_url && (
+                    <Image
+                      src={project.image_url}
+                      alt={project.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                      {project.category}
+                    </span>
+                    <h3 className="text-xl font-bold text-white mt-1">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-gray-300 mt-2">
+                      {project.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Services Section */}
-      <section id="services" className="min-h-screen py-20 px-6 flex items-center border-b border-white/10">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold mb-12">Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {['Branding', 'Exhibition', 'Signage'].map((service) => (
-              <div key={service} className="p-8 border border-white/10 rounded-lg hover:border-primary transition-colors">
-                <h3 className="text-2xl font-bold mb-4">{service}</h3>
-                <p className="text-gray-400">
-                  Comprehensive solutions for your business needs. We deliver high-quality results tailored to your brand.
-                </p>
-              </div>
-            ))}
+        <section
+          id="services"
+          className="min-h-screen py-20 px-6 flex items-center border-b border-white/10"
+        >
+          <div className="container mx-auto">
+            <h2 className="text-4xl font-bold mb-12">Services</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {["Branding", "Exhibition", "Signage"].map((service) => (
+                <div
+                  key={service}
+                  className="p-8 border border-white/10 rounded-lg hover:border-primary transition-colors"
+                >
+                  <h3 className="text-2xl font-bold mb-4">{service}</h3>
+                  <p className="text-gray-400">
+                    Comprehensive solutions for your business needs. We deliver
+                    high-quality results tailored to your brand.
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="min-h-[50vh] py-20 px-6 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-8">Let's work together</h2>
-          <a href="mailto:siso-sign@naver.com" className="text-xl md:text-2xl text-primary hover:underline font-semibold">
-            siso-sign@naver.com
-          </a>
-        </div>
-      </section>
+        <section
+          id="contact"
+          className="min-h-[50vh] py-20 px-6 flex items-center justify-center"
+        >
+          <div className="text-center">
+            <h2 className="text-4xl md:text-6xl font-bold mb-8">
+              Let&apos;s work together
+            </h2>
+            <a
+              href="mailto:siso-sign@naver.com"
+              className="text-xl md:text-2xl text-primary hover:underline font-semibold"
+            >
+              siso-sign@naver.com
+            </a>
+          </div>
+        </section>
 
-      <Footer />
-    </main>
+        <Footer />
+      </main>
+    </>
   );
 }

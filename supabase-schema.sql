@@ -82,7 +82,14 @@ INSERT INTO site_settings (key, value, type, description) VALUES
   ('contact_email', 'siso-sign@naver.com', 'text', '연락처 이메일'),
   ('contact_phone', '', 'text', '연락처 전화번호'),
   ('contact_address', '', 'text', '주소'),
-  ('footer_copyright', '© 2026 siso-sign. All rights reserved.', 'text', '푸터 저작권 문구');
+  ('footer_copyright', '© 2026 siso-sign. All rights reserved.', 'text', '푸터 저작권 문구'),
+  ('business_name', '', 'text', '상호명 (사업자등록증 상 상호)'),
+  ('business_representative', '', 'text', '대표자 성명'),
+  ('business_registration_number', '', 'text', '사업자등록번호'),
+  ('business_address', '', 'text', '사업장 소재지'),
+  ('business_phone', '', 'text', '대표 전화번호'),
+  ('business_email', '', 'text', '대표 이메일'),
+  ('business_hosting_provider', 'Vercel', 'text', '호스팅 제공자');
 
 -- 서비스 기본값
 INSERT INTO services (title, description, icon, sort_order) VALUES

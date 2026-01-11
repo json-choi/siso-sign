@@ -1,8 +1,24 @@
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import Link from 'next/link';
-import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import Link from "next/link";
+import Image from "next/image";
+import { supabase } from "@/lib/supabase";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "포트폴리오",
+  description:
+    "시소사인의 간판 제작, 사이니지 디자인, 브랜딩 포트폴리오입니다. 다양한 공간과 브랜드를 위한 사인 디자인 작업을 확인하세요.",
+  openGraph: {
+    title: "포트폴리오 | 시소사인",
+    description:
+      "시소사인의 간판 제작, 사이니지 디자인, 브랜딩 포트폴리오입니다.",
+    url: "https://siso-sign.com/work",
+  },
+  alternates: {
+    canonical: "https://siso-sign.com/work",
+  },
+};
 
 export const revalidate = 0;
 

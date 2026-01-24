@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!validatePassword(password)) {
+    if (!(await validatePassword(password))) {
       return NextResponse.json(
         { error: '비밀번호가 올바르지 않습니다.' },
         { status: 401 }

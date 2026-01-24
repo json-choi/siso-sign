@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Check } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 import type { SiteSetting } from '@/types/database';
 
 const defaultValues: Record<string, string> = {
@@ -24,7 +25,7 @@ const contentFields = [
   { key: 'about_title', label: '페이지 제목', type: 'text' },
   { key: 'about_description_1', label: '소개 첫 번째 문단', type: 'rich-text' },
   { key: 'about_description_2', label: '소개 두 번째 문단', type: 'rich-text' },
-  { key: 'about_image_url', label: '이미지 URL', type: 'text' },
+  { key: 'about_image_url', label: '이미지', type: 'image' },
 ];
 
 const valueFields = [
@@ -160,6 +161,11 @@ export default function AboutPage() {
         <RichTextEditor
           content={getValue(field.key)}
           onChange={(html) => handleChange(field.key, html)}
+        />
+      ) : field.type === 'image' ? (
+        <ImageUploadField
+          value={getValue(field.key)}
+          onChange={(url) => handleChange(field.key, url)}
         />
       ) : (
         <input

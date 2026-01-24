@@ -1,15 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, Lock, Eye, EyeOff } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 import type { SiteSetting } from '@/types/database';
+
+const isImageField = (key: string) => {
+  return key.includes('image') || key.includes('logo') || key.includes('thumbnail') || key.includes('photo');
+};
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
   const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
+  
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -72,6 +86,54 @@ export default function SettingsPage() {
 
   const hasChanges = (key: string) => {
     return key in editedValues;
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const res = await fetch('/api/admin/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPasswordError(data.error || '비밀번호 변경에 실패했습니다.');
+        return;
+      }
+
+      setPasswordSuccess('비밀번호가 변경되었습니다.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+
+      setTimeout(() => setPasswordSuccess(''), 3000);
+    } catch {
+      setPasswordError('서버 오류가 발생했습니다.');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (isLoading) {
@@ -150,6 +212,11 @@ export default function SettingsPage() {
                       content={getDisplayValue(setting)}
                       onChange={(html) => handleChange(setting.key, html)}
                     />
+                  ) : isImageField(setting.key) ? (
+                    <ImageUploadField
+                      value={getDisplayValue(setting)}
+                      onChange={(url) => handleChange(setting.key, url)}
+                    />
                   ) : (
                     <input
                       type="text"
@@ -163,6 +230,89 @@ export default function SettingsPage() {
             </div>
           </div>
         ))}
+
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            비밀번호 변경
+          </h2>
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                현재 비밀번호
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                새 비밀번호
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                새 비밀번호 확인
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base"
+              />
+            </div>
+
+            {passwordError && (
+              <p className="text-sm text-red-500">{passwordError}</p>
+            )}
+
+            {passwordSuccess && (
+              <p className="text-sm text-green-500">{passwordSuccess}</p>
+            )}
+
+            <button
+              onClick={handlePasswordChange}
+              disabled={isChangingPassword}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              <Lock className="w-4 h-4" />
+              {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
+            </button>
+
+            <p className="text-xs text-gray-500">
+              비밀번호는 최소 6자 이상이어야 합니다. 변경 후에는 새 비밀번호로 로그인하세요.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

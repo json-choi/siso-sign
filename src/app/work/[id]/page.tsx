@@ -71,11 +71,11 @@ export default async function ProjectPage({ params }: PageProps) {
   
   const portfolio = await getPortfolio(id);
   
-  const fallbackProjects: Record<string, { title: string; category: string; description: string; image_url: string; images: string[] }> = {
-    '1': { title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인 프로젝트입니다. 로고, 컬러 시스템, 타이포그래피 등 브랜드의 시각적 정체성을 확립했습니다.', image_url: '/project1.png', images: ['/project1.png'] },
-    '2': { title: 'Project 2', category: 'Exhibition', description: '전시 공간을 위한 사이니지 시스템입니다. 방문객의 동선을 고려한 직관적인 안내 시스템을 디자인했습니다.', image_url: '/project2.jpg', images: ['/project2.jpg'] },
-    '3': { title: 'Project 3', category: 'Signage', description: '상업 공간의 통합 사인 시스템입니다. 외부 간판부터 내부 안내까지 일관된 브랜드 경험을 제공합니다.', image_url: '/project3.png', images: ['/project3.png'] },
-    '4': { title: 'Project 4', category: 'Branding', description: '모션 그래픽을 활용한 브랜딩 프로젝트입니다. 디지털 환경에서 브랜드의 역동성을 표현했습니다.', image_url: '/project4.gif', images: ['/project4.gif'] },
+  const fallbackProjects: Record<string, { title: string; category: string; description: string; image_url: string | null; images: string[] }> = {
+    '1': { title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인 프로젝트입니다. 로고, 컬러 시스템, 타이포그래피 등 브랜드의 시각적 정체성을 확립했습니다.', image_url: null, images: [] },
+    '2': { title: 'Project 2', category: 'Exhibition', description: '전시 공간을 위한 사이니지 시스템입니다. 방문객의 동선을 고려한 직관적인 안내 시스템을 디자인했습니다.', image_url: null, images: [] },
+    '3': { title: 'Project 3', category: 'Signage', description: '상업 공간의 통합 사인 시스템입니다. 외부 간판부터 내부 안내까지 일관된 브랜드 경험을 제공합니다.', image_url: null, images: [] },
+    '4': { title: 'Project 4', category: 'Branding', description: '모션 그래픽을 활용한 브랜딩 프로젝트입니다. 디지털 환경에서 브랜드의 역동성을 표현했습니다.', image_url: null, images: [] },
   };
 
   const project = portfolio || fallbackProjects[id];
@@ -132,13 +132,17 @@ export default async function ProjectPage({ params }: PageProps) {
                     href={`/work/${item.id}`}
                     className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
                   >
-                    {item.image_url && (
+                    {item.image_url && item.image_url.startsWith('http') ? (
                       <Image
                         src={item.image_url}
                         alt={item.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-gray-600 text-sm">No Image</span>
+                      </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4">

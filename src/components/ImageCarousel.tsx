@@ -14,7 +14,9 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  if (!images || images.length === 0) {
+  const validImages = images?.filter(img => img && img.startsWith('http')) || [];
+
+  if (validImages.length === 0) {
     return (
       <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5 flex items-center justify-center">
         <p className="text-gray-500">이미지가 없습니다</p>
@@ -22,11 +24,11 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
     );
   }
 
-  if (images.length === 1) {
+  if (validImages.length === 1) {
     return (
       <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5">
         <Image
-          src={images[0]}
+          src={validImages[0]}
           alt={alt}
           fill
           className="object-cover"
@@ -38,12 +40,12 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
 
   const goToPrevious = () => {
     setDirection(-1);
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? validImages.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
     setDirection(1);
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === validImages.length - 1 ? 0 : prev + 1));
   };
 
   const goToSlide = (index: number) => {
@@ -81,7 +83,7 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
             className="absolute inset-0"
           >
             <Image
-              src={images[currentIndex]}
+              src={validImages[currentIndex]}
               alt={`${alt} - ${currentIndex + 1}`}
               fill
               className="object-cover"
@@ -107,12 +109,12 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
         </button>
 
         <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-sm">
-          {currentIndex + 1} / {images.length}
+          {currentIndex + 1} / {validImages.length}
         </div>
       </div>
 
       <div className="flex justify-center gap-2 mt-4">
-        {images.map((_, index) => (
+        {validImages.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}

@@ -42,12 +42,12 @@ export default async function Footer() {
     settings.business_name || settings.business_registration_number;
 
   return (
-    <footer className="bg-black text-white pt-24 pb-12 border-t border-white/5">
+    <footer className="bg-black text-white pt-12 pb-6 border-t border-white/5">
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-10">
           <div className="space-y-4 max-w-md">
             <div
-              className="text-4xl md:text-6xl font-bold tracking-tighter leading-none text-primary"
+              className="text-2xl md:text-4xl font-bold tracking-tighter leading-none text-primary"
               style={{ fontFamily: "var(--font-cal-sans)" }}
             >
               siso-sign
@@ -74,7 +74,7 @@ export default async function Footer() {
         </div>
 
         {hasBusinessInfo && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 border-t border-white/10 pt-12 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8 border-t border-white/10 pt-8 mb-8">
             {(settings.business_address) && (
               <div className="space-y-4">
                 <h3 className="text-xs font-medium text-white/30 uppercase tracking-[0.2em]">Location</h3>
@@ -113,22 +113,14 @@ export default async function Footer() {
               </div>
             )}
 
-            {(settings.business_registration_number || settings.business_hosting_provider) && (
+            {settings.business_registration_number && (
               <div className="space-y-4">
                 <h3 className="text-xs font-medium text-white/30 uppercase tracking-[0.2em]">Legal</h3>
                 <div className="space-y-2 text-sm text-white/70">
-                  {settings.business_registration_number && (
-                    <p>
-                      <span className="text-white/30 mr-2">REG</span>
-                      {settings.business_registration_number}
-                    </p>
-                  )}
-                  {settings.business_hosting_provider && (
-                    <p>
-                      <span className="text-white/30 mr-2">HOST</span>
-                      {settings.business_hosting_provider}
-                    </p>
-                  )}
+                  <p>
+                    <span className="text-white/30 mr-2">REG</span>
+                    {settings.business_registration_number}
+                  </p>
                 </div>
               </div>
             )}

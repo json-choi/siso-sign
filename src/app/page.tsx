@@ -81,28 +81,28 @@ export default async function Home() {
       title: "Project 1",
       category: "Branding",
       description: "브랜드 아이덴티티 디자인 프로젝트",
-      image_url: "/project1.png",
+      image_url: null,
     },
     {
       id: "2",
       title: "Project 2",
       category: "Exhibition",
       description: "전시 공간 사이니지 시스템",
-      image_url: "/project2.jpg",
+      image_url: null,
     },
     {
       id: "3",
       title: "Project 3",
       category: "Signage",
       description: "상업 공간 통합 사인 시스템",
-      image_url: "/project3.png",
+      image_url: null,
     },
     {
       id: "4",
       title: "Project 4",
       category: "Branding",
       description: "모션 그래픽 브랜딩",
-      image_url: "/project4.gif",
+      image_url: null,
     },
   ];
 
@@ -117,10 +117,7 @@ export default async function Home() {
       <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
         <Header />
 
-        <section
-          id="hero"
-          className="h-screen flex items-center justify-center border-b border-white/10"
-        >
+        <section className="h-screen flex items-center justify-center border-b border-white/10">
           <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-center">
             WE DESIGN!
             <br />
@@ -130,14 +127,11 @@ export default async function Home() {
           </h1>
         </section>
 
-        <section
-          id="about"
-          className="min-h-screen py-20 px-6 flex items-center border-b border-white/10"
-        >
+        <section className="min-h-screen py-20 px-6 flex items-center border-b border-white/10">
           <div className="container mx-auto">
             <h2 className="text-4xl font-bold mb-8">About Us</h2>
             <p
-              className="text-xl md:text-3xl leading-relaxed max-w-4xl"
+              className="text-xl md:text-3xl leading-relaxed max-w-4xl mb-8"
               style={{ fontFamily: "var(--font-cal-sans)" }}
             >
               <span>
@@ -153,13 +147,17 @@ export default async function Home() {
                 현실로 구현합니다.
               </span>
             </p>
+            <Link
+              href="/about"
+              className="group inline-flex items-center gap-2 text-primary hover:text-white transition-colors"
+            >
+              <span>자세히 보기</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </section>
 
-        <section
-          id="work"
-          className="min-h-screen py-20 px-6 border-b border-white/10"
-        >
+        <section className="min-h-screen py-20 px-6 border-b border-white/10">
           <div className="container mx-auto">
             <div className="flex items-end justify-between mb-12">
               <h2 className="text-4xl font-bold">Selected Work</h2>
@@ -178,13 +176,17 @@ export default async function Home() {
                   href={`/work/${project.id}`}
                   className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
                 >
-                  {project.image_url && (
+                  {project.image_url && project.image_url.startsWith('http') ? (
                     <Image
                       src={project.image_url}
                       alt={project.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-gray-600 text-sm">No Image</span>
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -204,43 +206,47 @@ export default async function Home() {
           </div>
         </section>
 
-        <section
-          id="services"
-          className="min-h-screen py-20 px-6 flex items-center border-b border-white/10"
-        >
+        <section className="min-h-screen py-20 px-6 flex items-center border-b border-white/10">
           <div className="container mx-auto">
-            <h2 className="text-4xl font-bold mb-12">Services</h2>
+            <div className="flex items-end justify-between mb-12">
+              <h2 className="text-4xl font-bold">Services</h2>
+              <Link
+                href="/service"
+                className="group flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {["Branding", "Exhibition", "Signage"].map((service) => (
-                <div
+                <Link
                   key={service}
-                  className="p-8 border border-white/10 rounded-lg hover:border-primary transition-colors"
+                  href="/service"
+                  className="p-8 border border-white/10 rounded-lg hover:border-primary transition-colors group"
                 >
-                  <h3 className="text-2xl font-bold mb-4">{service}</h3>
+                  <h3 className="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">{service}</h3>
                   <p className="text-gray-400">
                     Comprehensive solutions for your business needs. We deliver
                     high-quality results tailored to your brand.
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
-        <section
-          id="contact"
-          className="min-h-[50vh] py-20 px-6 flex items-center justify-center"
-        >
+        <section className="min-h-[50vh] py-20 px-6 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-4xl md:text-6xl font-bold mb-8">
               Let&apos;s work together
             </h2>
-            <a
-              href="mailto:siso-sign@naver.com"
-              className="text-xl md:text-2xl text-primary hover:underline font-semibold"
+            <Link
+              href="/contact"
+              className="inline-block bg-primary text-black px-8 py-4 rounded-lg font-semibold hover:bg-white transition-colors"
             >
-              siso-sign@naver.com
-            </a>
+              Contact Us
+            </Link>
           </div>
         </section>
 

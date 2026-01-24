@@ -36,10 +36,10 @@ export default async function WorkPage() {
   const portfolios = await getPortfolios();
 
   const fallbackProjects = [
-    { id: '1', title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인', image_url: '/project1.png' },
-    { id: '2', title: 'Project 2', category: 'Exhibition', description: '전시 공간 사이니지', image_url: '/project2.jpg' },
-    { id: '3', title: 'Project 3', category: 'Signage', description: '통합 사인 시스템', image_url: '/project3.png' },
-    { id: '4', title: 'Project 4', category: 'Branding', description: '모션 브랜딩', image_url: '/project4.gif' },
+    { id: '1', title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인', image_url: null },
+    { id: '2', title: 'Project 2', category: 'Exhibition', description: '전시 공간 사이니지', image_url: null },
+    { id: '3', title: 'Project 3', category: 'Signage', description: '통합 사인 시스템', image_url: null },
+    { id: '4', title: 'Project 4', category: 'Branding', description: '모션 브랜딩', image_url: null },
   ];
 
   const projects = portfolios.length > 0 ? portfolios : fallbackProjects;
@@ -64,13 +64,17 @@ export default async function WorkPage() {
                 href={`/work/${project.id}`}
                 className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
               >
-                {project.image_url && (
+                {project.image_url && project.image_url.startsWith('http') ? (
                   <Image
                     src={project.image_url}
                     alt={project.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-gray-600 text-sm">No Image</span>
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

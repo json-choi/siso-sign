@@ -108,23 +108,23 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">사이트 설정</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">사이트 설정</h1>
 
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         {sortedGroups.map(([group, groupSettings]) => (
-          <div key={group} className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-6">{group}</h2>
-            <div className="space-y-6">
+          <div key={group} className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">{group}</h2>
+            <div className="space-y-4 md:space-y-6">
               {groupSettings.map((setting) => (
                 <div key={setting.key}>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                     <label className="text-sm font-medium text-gray-400">
                       {setting.description || setting.key}
                     </label>
                     <button
                       onClick={() => handleSave(setting)}
                       disabled={!hasChanges(setting.key) && !savedKeys.has(setting.key)}
-                      className={`flex items-center gap-1 px-3 py-1 rounded text-sm transition-colors ${
+                      className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded text-sm transition-colors w-full sm:w-auto ${
                         savedKeys.has(setting.key)
                           ? 'bg-green-500/20 text-green-500'
                           : hasChanges(setting.key)
@@ -155,7 +155,7 @@ export default function SettingsPage() {
                       type="text"
                       value={getDisplayValue(setting)}
                       onChange={(e) => handleChange(setting.key, e.target.value)}
-                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
+                      className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base"
                     />
                   )}
                 </div>

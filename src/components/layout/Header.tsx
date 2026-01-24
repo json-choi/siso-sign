@@ -7,25 +7,22 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navItems = [
-  { name: 'About', href: '/#about' },
-  { name: 'Work', href: '/#work' },
-  { name: 'Services', href: '/#services' },
-  { name: 'Contact', href: '/#contact' },
+  { name: 'About', href: '/about' },
+  { name: 'Work', href: '/work' },
+  { name: 'Service', href: '/service' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export default function Header() {
   const pathname = usePathname();
-  const isHome = pathname === '/';
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const getHref = (href: string) => {
-    if (isHome && href.startsWith('/#')) {
-      return href.slice(1);
-    }
-    return href;
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
   };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -69,8 +66,10 @@ export default function Header() {
           {navItems.map((item) => (
             <Link
               key={item.name}
-              href={getHref(item.href)}
-              className="text-sm font-medium hover:text-primary transition-colors"
+              href={item.href}
+              className={`text-sm font-medium transition-colors ${
+                isActive(item.href) ? 'text-primary' : 'hover:text-primary'
+              }`}
             >
               {item.name}
             </Link>
@@ -97,8 +96,10 @@ export default function Header() {
           {navItems.map((item) => (
             <Link
               key={item.name}
-              href={getHref(item.href)}
-              className="text-lg font-medium hover:text-primary transition-colors"
+              href={item.href}
+              className={`text-lg font-medium transition-colors ${
+                isActive(item.href) ? 'text-primary' : 'hover:text-primary'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               {item.name}

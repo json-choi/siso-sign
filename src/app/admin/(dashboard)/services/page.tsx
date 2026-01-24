@@ -83,8 +83,8 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-white">서비스 관리</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">서비스 관리</h1>
         <button
           onClick={() => openModal()}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
@@ -94,7 +94,40 @@ export default function ServicesPage() {
         </button>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+      <div className="md:hidden space-y-4">
+        {services.map((item) => (
+          <div key={item.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="text-white font-medium">{item.title}</h3>
+                <span className="text-xs text-gray-500">{item.icon || '-'}</span>
+              </div>
+              <span className={`px-2 py-1 text-xs rounded ${item.is_active ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
+                {item.is_active ? '활성' : '비활성'}
+              </span>
+            </div>
+            <p className="text-sm text-gray-400 mb-4 line-clamp-2">{item.description || '-'}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">순서: {item.sort_order}</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => openModal(item)} className="p-2 text-gray-400 hover:text-white">
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-500">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {services.length === 0 && (
+          <div className="p-12 text-center text-gray-400 bg-white/5 border border-white/10 rounded-xl">
+            등록된 서비스가 없습니다.
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/10">
@@ -154,8 +187,8 @@ export default function ServicesPage() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111] border border-white/10 rounded-xl w-full max-w-lg">
+        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
+          <div className="bg-[#111] border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto md:max-h-none">
             <div className="p-6 border-b border-white/10">
               <h2 className="text-xl font-bold text-white">
                 {editingItem ? '서비스 수정' : '새 서비스'}

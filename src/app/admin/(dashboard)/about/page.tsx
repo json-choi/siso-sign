@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, Check } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+import IconPicker from '@/components/admin/IconPicker';
 import type { SiteSetting } from '@/types/database';
 
 const defaultValues: Record<string, string> = {
@@ -13,12 +14,16 @@ const defaultValues: Record<string, string> = {
   about_image_url: '',
   about_value_1_title: '진심',
   about_value_1_subtitle: 'Sincerity',
+  about_value_1_icon: 'Heart',
   about_value_2_title: '정확',
   about_value_2_subtitle: 'Accuracy',
+  about_value_2_icon: 'Target',
   about_value_3_title: '안목',
   about_value_3_subtitle: 'Insight',
+  about_value_3_icon: 'Eye',
   about_value_4_title: '완벽',
   about_value_4_subtitle: 'Perfection',
+  about_value_4_icon: 'CheckCircle',
 };
 
 const contentFields = [
@@ -29,12 +34,16 @@ const contentFields = [
 ];
 
 const valueFields = [
+  { key: 'about_value_1_icon', label: '핵심 가치 1 - 아이콘', type: 'icon' },
   { key: 'about_value_1_title', label: '핵심 가치 1 - 제목', type: 'text' },
   { key: 'about_value_1_subtitle', label: '핵심 가치 1 - 서브타이틀', type: 'text' },
+  { key: 'about_value_2_icon', label: '핵심 가치 2 - 아이콘', type: 'icon' },
   { key: 'about_value_2_title', label: '핵심 가치 2 - 제목', type: 'text' },
   { key: 'about_value_2_subtitle', label: '핵심 가치 2 - 서브타이틀', type: 'text' },
+  { key: 'about_value_3_icon', label: '핵심 가치 3 - 아이콘', type: 'icon' },
   { key: 'about_value_3_title', label: '핵심 가치 3 - 제목', type: 'text' },
   { key: 'about_value_3_subtitle', label: '핵심 가치 3 - 서브타이틀', type: 'text' },
+  { key: 'about_value_4_icon', label: '핵심 가치 4 - 아이콘', type: 'icon' },
   { key: 'about_value_4_title', label: '핵심 가치 4 - 제목', type: 'text' },
   { key: 'about_value_4_subtitle', label: '핵심 가치 4 - 서브타이틀', type: 'text' },
 ];
@@ -166,6 +175,11 @@ export default function AboutPage() {
         <ImageUploadField
           value={getValue(field.key)}
           onChange={(url) => handleChange(field.key, url)}
+        />
+      ) : field.type === 'icon' ? (
+        <IconPicker
+          value={getValue(field.key)}
+          onChange={(iconName) => handleChange(field.key, iconName)}
         />
       ) : (
         <input

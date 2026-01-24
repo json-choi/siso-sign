@@ -1,9 +1,9 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Image from "next/image";
-import { User, Target, Eye, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
+import { DynamicIcon } from "@/components/admin/IconPicker";
 
 export const metadata: Metadata = {
   title: "About | siso-sign",
@@ -20,12 +20,16 @@ const defaultValues: Record<string, string> = {
   about_image_url: '',
   about_value_1_title: '진심',
   about_value_1_subtitle: 'Sincerity',
+  about_value_1_icon: 'Heart',
   about_value_2_title: '정확',
   about_value_2_subtitle: 'Accuracy',
+  about_value_2_icon: 'Target',
   about_value_3_title: '안목',
   about_value_3_subtitle: 'Insight',
+  about_value_3_icon: 'Eye',
   about_value_4_title: '완벽',
   about_value_4_subtitle: 'Perfection',
+  about_value_4_icon: 'CheckCircle',
 };
 
 async function getAboutSettings() {
@@ -41,16 +45,14 @@ async function getAboutSettings() {
   return settings;
 }
 
-const iconMap = [User, Target, Eye, CheckCircle];
-
 export default async function AboutPage() {
   const settings = await getAboutSettings();
 
   const coreValues = [
-    { title: settings.about_value_1_title, subtitle: settings.about_value_1_subtitle, icon: iconMap[0] },
-    { title: settings.about_value_2_title, subtitle: settings.about_value_2_subtitle, icon: iconMap[1] },
-    { title: settings.about_value_3_title, subtitle: settings.about_value_3_subtitle, icon: iconMap[2] },
-    { title: settings.about_value_4_title, subtitle: settings.about_value_4_subtitle, icon: iconMap[3] },
+    { title: settings.about_value_1_title, subtitle: settings.about_value_1_subtitle, icon: settings.about_value_1_icon },
+    { title: settings.about_value_2_title, subtitle: settings.about_value_2_subtitle, icon: settings.about_value_2_icon },
+    { title: settings.about_value_3_title, subtitle: settings.about_value_3_subtitle, icon: settings.about_value_3_icon },
+    { title: settings.about_value_4_title, subtitle: settings.about_value_4_subtitle, icon: settings.about_value_4_icon },
   ];
 
   return (
@@ -81,27 +83,24 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-white/5 py-20 border-y border-white/10">
+      <section className="bg-white/5 py-12 border-y border-white/10">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-16">Core Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {coreValues.map((value, index) => {
-              const Icon = value.icon;
-              return (
-                <div
-                  key={index}
-                  className="group p-8 border border-white/10 rounded-xl hover:border-primary transition-colors bg-background/50 backdrop-blur-sm"
-                >
-                  <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center mb-6 text-white group-hover:text-primary group-hover:border-primary transition-colors">
-                    <Icon className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{value.title}</h3>
-                  <p className="text-sm text-gray-400 font-medium uppercase tracking-wider">
-                    {value.subtitle}
-                  </p>
+          <h2 className="text-2xl font-bold text-center mb-10">Core Values</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {coreValues.map((value, index) => (
+              <div
+                key={index}
+                className="group p-6 border border-white/10 rounded-lg hover:border-primary/50 transition-all bg-background/20 backdrop-blur-sm hover:bg-white/5"
+              >
+                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center mb-4 text-gray-400 group-hover:text-primary group-hover:border-primary transition-colors">
+                  <DynamicIcon name={value.icon} className="w-5 h-5" />
                 </div>
-              );
-            })}
+                <h3 className="text-lg font-semibold mb-1">{value.title}</h3>
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">
+                  {value.subtitle}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -14,49 +14,22 @@ siso-sign is a brand homepage for a signage design agency built with Next.js 16,
 
 ---
 
+## Workflow
+
+1.  **Check Git Status:** Before starting any task, ensure your local repository is up-to-date with the latest changes from the remote branch.
+2.  **Verify with Build:** After completing a task, always run `pnpm build` to ensure the project builds successfully without any errors.
+3.  **Push Changes:** Once verified, push your changes to the repository.
+4.  **Deployment:** The project is automatically deployed to Vercel. The live domain is [www.siso-sign.com](https://www.siso-sign.com).
+
+---
+
 ## Build / Lint / Test Commands
-
-```bash
-# Development
-pnpm dev              # Start dev server with Turbopack
-
-# Build & Production
-pnpm build            # Production build (includes type checking)
-pnpm start            # Start production server
-
-# Linting
-pnpm lint             # Run ESLint
-
-# Type Checking (standalone)
-pnpm tsc --noEmit     # Check types without emitting
-```
 
 **No test framework configured yet.** If tests are added, use Vitest or Jest.
 
 ---
 
 ## Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── admin/              # Admin panel (protected routes)
-│   │   ├── (dashboard)/    # Route group with shared layout
-│   │   │   ├── dashboard/
-│   │   │   ├── portfolios/
-│   │   │   ├── services/
-│   │   │   ├── settings/
-│   │   │   └── links/
-│   │   └── page.tsx        # Login page
-│   ├── api/admin/          # API routes (protected by middleware)
-│   ├── work/               # Portfolio pages
-│   └── page.tsx            # Homepage
-├── components/
-│   ├── admin/              # Admin-specific components
-│   └── layout/             # Shared layout components
-├── lib/                    # Utilities (supabase, auth)
-└── types/                  # TypeScript type definitions
-```
 
 ---
 
@@ -70,17 +43,6 @@ Order imports in this sequence:
 3. Internal modules with `@/` alias
 4. Types (use `import type` for type-only imports)
 
-```typescript
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Plus, Pencil } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import type { Portfolio } from '@/types/database';
-```
-
 ### TypeScript
 
 - **Strict mode enabled** - no implicit any
@@ -89,42 +51,12 @@ import type { Portfolio } from '@/types/database';
 - Use `| null` over `| undefined` for optional values from DB
 - Never use `as any`, `@ts-ignore`, or `@ts-expect-error`
 
-```typescript
-// Database types pattern
-export interface Portfolio {
-  id: string;
-  title: string;
-  description: string | null;  // nullable DB fields
-  is_published: boolean;
-}
-
-// Derived types
-export type PortfolioInsert = Omit<Portfolio, 'id' | 'created_at' | 'updated_at'>;
-export type PortfolioUpdate = Partial<PortfolioInsert>;
-```
-
 ### React Components
 
 - Use function declarations for components (`export default function`)
 - Client components: Add `'use client'` directive at top
 - Server components: Default (no directive needed)
 - Props destructuring in function signature
-
-```typescript
-// Client component
-'use client';
-
-export default function AdminSidebar() {
-  const [state, setState] = useState(false);
-  // ...
-}
-
-// Server component (default)
-export default async function DashboardPage() {
-  const data = await fetchData();
-  // ...
-}
-```
 
 ### Naming Conventions
 
@@ -145,54 +77,17 @@ export default async function DashboardPage() {
 - Use CSS variables for theming: `bg-background`, `text-primary`
 - Utility pattern: `clsx()` + `tailwind-merge` for conditional classes
 
-```typescript
-import { clsx } from 'clsx';
-
-className={clsx(
-  'px-4 py-2 rounded-lg transition-colors',
-  isActive ? 'bg-primary text-black' : 'text-gray-400 hover:bg-white/5'
-)}
-```
-
 ### Error Handling
 
 - API routes: Return `NextResponse.json({ error: message }, { status: code })`
 - Client: Use try/catch with user-friendly error messages
 - Never swallow errors silently
 
-```typescript
-// API Route
-if (error) {
-  return NextResponse.json({ error: error.message }, { status: 500 });
-}
-
-// Client
-try {
-  const res = await fetch('/api/...');
-  if (!res.ok) {
-    const data = await res.json();
-    setError(data.error || 'Something went wrong');
-    return;
-  }
-} catch {
-  setError('Server error occurred');
-}
-```
-
 ---
 
 ## API Route Patterns
 
 Next.js 16 uses Promise-based params:
-
-```typescript
-type RouteContext = { params: Promise<{ id: string }> };
-
-export async function GET(_request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
-  // ...
-}
-```
 
 Standard CRUD pattern:
 - `GET /api/admin/[resource]` - List all
@@ -215,13 +110,6 @@ Standard CRUD pattern:
 ## Environment Variables
 
 Required in `.env.local`:
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_JWT_SECRET=
-ADMIN_PASSWORD=
-```
 
 ---
 
@@ -236,42 +124,3 @@ ADMIN_PASSWORD=
 ---
 
 ## File Templates
-
-### New API Route
-```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
-
-export async function GET() {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.from('table').select('*');
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  return NextResponse.json(data);
-}
-```
-
-### New Admin Page
-```typescript
-'use client';
-
-import { useState, useEffect } from 'react';
-
-export default function NewPage() {
-  const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/admin/resource')
-      .then(res => res.json())
-      .then(setData)
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  if (isLoading) return <div className="text-white">로딩 중...</div>;
-
-  return <div>{/* content */}</div>;
-}
-```

@@ -1,50 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase';
 
+// 서명된 업로드 URL 발급 (클라이언트가 Supabase에 직접 업로드하기 위해 사용)
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const { filePath } = await request.json();
 
-    if (!file) {
-      return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 });
-    }
-
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json(
-        { error: '이미지 파일만 업로드할 수 있습니다.' },
-        { status: 400 }
-      );
-    }
-
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: '파일 크기는 10MB를 초과할 수 없습니다.' },
-        { status: 400 }
-      );
+    if (!filePath || typeof filePath !== 'string') {
+      return NextResponse.json({ error: '유효하지 않은 파일 경로입니다.' }, { status: 400 });
     }
 
     const supabase = createAdminClient();
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-    const filePath = `portfolios/${fileName}`;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-
-    const { error: uploadError } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('images')
-      .upload(filePath, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
+      .createSignedUploadUrl(filePath);
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
+    if (error) {
+      console.error('Signed URL error:', error);
       return NextResponse.json(
-        { error: '업로드에 실패했습니다: ' + uploadError.message },
+        { error: '서명된 URL 생성에 실패했습니다: ' + error.message },
         { status: 500 }
       );
     }
@@ -53,12 +28,13 @@ export async function POST(request: NextRequest) {
       .from('images')
       .getPublicUrl(filePath);
 
-    return NextResponse.json({ url: urlData.publicUrl });
+    return NextResponse.json({
+      signedUrl: data.signedUrl,
+      token: data.token,
+      publicUrl: urlData.publicUrl,
+    });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    );
+    console.error('Upload sign error:', error);
+    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { X, Image as ImageIcon, Loader2, GripVertical } from 'lucide-react';
 import Image from 'next/image';
-import { compressImageToWebP } from '@/lib/image-compress';
+import { uploadImage } from '@/lib/upload';
 
 interface MultiImageUploadProps {
   value: string[];
@@ -34,23 +34,13 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
       const uploadedUrls: string[] = [];
 
       for (const file of filesToUpload) {
-        const compressed = await compressImageToWebP(file);
-        const formData = new FormData();
-        formData.append('file', compressed);
-
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.error || '업로드에 실패했습니다.');
+        try {
+          const url = await uploadImage(file);
+          uploadedUrls.push(url);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
           continue;
         }
-
-        uploadedUrls.push(data.url);
       }
 
       if (uploadedUrls.length > 0) {

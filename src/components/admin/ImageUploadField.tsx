@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { compressImageToWebP } from '@/lib/image-compress';
+import { uploadImage } from '@/lib/upload';
 
 interface ImageUploadFieldProps {
   value: string;
@@ -27,23 +27,8 @@ export default function ImageUploadField({
     setIsUploading(true);
 
     try {
-      const compressed = await compressImageToWebP(file);
-      const formData = new FormData();
-      formData.append('file', compressed);
-
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || '업로드에 실패했습니다.');
-        return;
-      }
-
-      onChange(data.url);
+      const url = await uploadImage(file);
+      onChange(url);
     } catch {
       setError('업로드 중 오류가 발생했습니다.');
     } finally {

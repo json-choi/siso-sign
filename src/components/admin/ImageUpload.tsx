@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { compressImageToWebP } from '@/lib/image-compress';
 
 interface ImageUploadProps {
   value: string;
@@ -20,8 +21,9 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
     setIsUploading(true);
 
     try {
+      const compressed = await compressImageToWebP(file);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
@@ -81,7 +83,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept="image/*"
         onChange={handleFileChange}
         className="hidden"
       />

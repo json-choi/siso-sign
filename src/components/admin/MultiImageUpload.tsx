@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { X, Image as ImageIcon, Loader2, GripVertical } from 'lucide-react';
 import Image from 'next/image';
+import { compressImageToWebP } from '@/lib/image-compress';
 
 interface MultiImageUploadProps {
   value: string[];
@@ -33,8 +34,9 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
       const uploadedUrls: string[] = [];
 
       for (const file of filesToUpload) {
+        const compressed = await compressImageToWebP(file);
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', compressed);
 
         const res = await fetch('/api/admin/upload', {
           method: 'POST',
@@ -127,7 +129,7 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept="image/*"
         onChange={handleFileChange}
         multiple
         className="hidden"

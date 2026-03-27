@@ -10,10 +10,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '파일이 없습니다.' }, { status: 400 });
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    if (!file.type.startsWith('image/')) {
       return NextResponse.json(
-        { error: '지원하지 않는 파일 형식입니다. (JPG, PNG, GIF, WEBP만 가능)' },
+        { error: '이미지 파일만 업로드할 수 있습니다.' },
         { status: 400 }
       );
     }

@@ -16,10 +16,38 @@ siso-sign is a brand homepage for a signage design agency built with Next.js 16,
 
 ## Workflow
 
-1.  **Check Git Status:** Before starting any task, ensure your local repository is up-to-date with the latest changes from the remote branch.
-2.  **Verify with Build:** After completing a task, always run `pnpm build` to ensure the project builds successfully without any errors.
-3.  **Push Changes:** Once verified, push your changes to the repository.
-4.  **Deployment:** The project is automatically deployed to Vercel. The live domain is [www.siso-sign.com](https://www.siso-sign.com).
+This workflow is designed to allow anyone, regardless of Git expertise, to contribute safely.
+
+### 1. Before Starting Work: Stay Updated
+Always pull the latest changes from the `main` branch to ensure your local version is up-to-date. This prevents merge conflicts.
+```bash
+git pull origin main
+```
+
+### 2. After Completing Work: Verify and Push
+Follow these steps to ensure your changes are safe and deployed correctly.
+
+**A. Check for Errors**
+Before committing, run the build command to check for type errors and other issues.
+```bash
+pnpm build
+```
+*(If you changed dependencies, run `pnpm install` before building.)*
+
+**B. Push to Main**
+Once verified, commit and push your changes to the `main` branch.
+```bash
+# Add all changed files
+git add .
+# Commit with a clear message
+git commit -m "Your descriptive commit message"
+# Push to the remote repository
+git push origin main
+```
+
+### 3. Automatic Deployment
+Pushing to the `main` branch automatically deploys the project to Vercel.
+- **Live Domain:** [www.siso-sign.com](https://www.siso-sign.com)
 
 ---
 

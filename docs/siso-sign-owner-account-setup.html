@@ -1,0 +1,1731 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light" />
+    <title>시소사인 온라인 계정 준비 안내</title>
+    <style>
+      :root {
+        --brand: #a40035;
+        --brand-dark: #780027;
+        --brand-soft: #fff1f5;
+        --ink: #171717;
+        --muted: #606060;
+        --line: #dedbd8;
+        --surface: #ffffff;
+        --surface-soft: #f7f6f4;
+        --success: #137a4b;
+        --success-soft: #eaf8f1;
+        --warning: #9a5a00;
+        --warning-soft: #fff6df;
+        --info: #245f8f;
+        --info-soft: #edf7ff;
+        --shadow: 0 18px 50px rgb(33 24 20 / 8%);
+        --radius-sm: 12px;
+        --radius-md: 20px;
+        --radius-lg: 30px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-10: 40px;
+        --space-12: 48px;
+        --space-16: 64px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 12% 0%, rgb(164 0 53 / 8%), transparent 28rem),
+          var(--surface-soft);
+        color: var(--ink);
+        font-family:
+          Pretendard,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        word-break: keep-all;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid rgb(164 0 53 / 32%);
+        outline-offset: 3px;
+      }
+
+      .skip-link {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 100;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: var(--ink);
+        color: #fff;
+        transform: translateY(-160%);
+        transition: transform 160ms ease;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .page-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero {
+        padding: 64px 0 40px;
+      }
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(28px, 6vw, 68px);
+        border: 1px solid rgb(255 255 255 / 10%);
+        border-radius: var(--radius-lg);
+        background: #111;
+        color: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card::after {
+        position: absolute;
+        right: -90px;
+        bottom: -135px;
+        width: 360px;
+        height: 360px;
+        border: 42px solid var(--brand);
+        border-radius: 50%;
+        content: "";
+        opacity: 0.86;
+      }
+
+      .brand {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: var(--space-8);
+        color: #ff366e;
+        font-size: 22px;
+        font-weight: 850;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 21px;
+      }
+
+      .eyebrow {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 var(--space-3);
+        color: #ff9ab7;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.18;
+        letter-spacing: -0.035em;
+      }
+
+      h1 {
+        position: relative;
+        z-index: 1;
+        max-width: 780px;
+        font-size: clamp(34px, 6vw, 62px);
+      }
+
+      .hero-description {
+        position: relative;
+        z-index: 1;
+        max-width: 700px;
+        margin: var(--space-5) 0 0;
+        color: #cfcfcf;
+        font-size: clamp(17px, 2vw, 20px);
+      }
+
+      .hero-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin-top: var(--space-8);
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: 10px 17px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        transition:
+          transform 160ms ease,
+          background 160ms ease,
+          border-color 160ms ease;
+      }
+
+      .button:hover {
+        background: var(--brand-dark);
+        transform: translateY(-1px);
+      }
+
+      .button.secondary {
+        border-color: rgb(255 255 255 / 24%);
+        background: rgb(255 255 255 / 8%);
+      }
+
+      .button.secondary:hover {
+        border-color: rgb(255 255 255 / 46%);
+        background: rgb(255 255 255 / 13%);
+      }
+
+      .progress-panel {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        max-width: 720px;
+        grid-template-columns: 1fr auto;
+        gap: var(--space-3) var(--space-4);
+        align-items: center;
+        margin-top: var(--space-10);
+      }
+
+      .progress-label {
+        color: #eee;
+        font-size: 14px;
+        font-weight: 750;
+      }
+
+      .progress-count {
+        color: #ff9ab7;
+        font-size: 14px;
+        font-weight: 850;
+      }
+
+      .progress-track {
+        grid-column: 1 / -1;
+        overflow: hidden;
+        height: 10px;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 14%);
+      }
+
+      .progress-bar {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #ff366e, #ff8aae);
+        transition: width 220ms ease;
+      }
+
+      .content-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: var(--space-8);
+        padding-bottom: 80px;
+      }
+
+      .toc {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        padding: var(--space-5);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: rgb(255 255 255 / 82%);
+        box-shadow: 0 8px 30px rgb(40 32 28 / 5%);
+        backdrop-filter: blur(12px);
+      }
+
+      .toc-title {
+        margin: 0 0 var(--space-3);
+        font-size: 13px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .toc nav {
+        display: grid;
+        gap: 4px;
+      }
+
+      .toc a {
+        padding: 9px 10px;
+        border-radius: 9px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .toc a:hover {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .document {
+        min-width: 0;
+      }
+
+      .section,
+      .service {
+        scroll-margin-top: 24px;
+      }
+
+      .section + .section,
+      .service + .service,
+      .section + .service,
+      .service + .section {
+        margin-top: var(--space-8);
+      }
+
+      .panel,
+      .service {
+        padding: clamp(22px, 4vw, 38px);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        box-shadow: 0 10px 34px rgb(32 25 22 / 5%);
+      }
+
+      .section-heading {
+        display: flex;
+        gap: var(--space-4);
+        align-items: flex-start;
+        margin-bottom: var(--space-6);
+      }
+
+      .section-number {
+        display: grid;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 13px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 850;
+      }
+
+      .section-heading h2 {
+        font-size: clamp(25px, 3vw, 34px);
+      }
+
+      .section-heading p {
+        margin: 7px 0 0;
+        color: var(--muted);
+      }
+
+      .notice {
+        display: flex;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border: 1px solid #f2d3dc;
+        border-radius: var(--radius-sm);
+        background: var(--brand-soft);
+      }
+
+      .notice.warning {
+        border-color: #efdca6;
+        background: var(--warning-soft);
+      }
+
+      .notice.info {
+        border-color: #c8e0f2;
+        background: var(--info-soft);
+      }
+
+      .notice-icon {
+        flex: 0 0 26px;
+        font-size: 20px;
+        line-height: 1.35;
+      }
+
+      .notice strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .notice p {
+        margin: 0;
+        color: #514742;
+        font-size: 14px;
+      }
+
+      .prep-grid,
+      .owner-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-4);
+      }
+
+      .prep-card {
+        padding: var(--space-5);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--surface-soft);
+      }
+
+      .prep-card h3 {
+        margin-bottom: var(--space-2);
+        font-size: 17px;
+      }
+
+      .prep-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-4);
+        margin-top: var(--space-6);
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field label {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .field input {
+        width: 100%;
+        min-height: 46px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .field input::placeholder {
+        color: #a4a09c;
+      }
+
+      .service-header {
+        display: flex;
+        gap: var(--space-4);
+        align-items: flex-start;
+        justify-content: space-between;
+        padding-bottom: var(--space-5);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .service-title-wrap {
+        display: flex;
+        gap: var(--space-4);
+        align-items: center;
+      }
+
+      .service-logo {
+        display: grid;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+      }
+
+      .service-logo.google {
+        background: #1a73e8;
+      }
+
+      .service-logo.naver {
+        background: #03c75a;
+      }
+
+      .service-logo.meta {
+        background: #0866ff;
+      }
+
+      .service h2 {
+        font-size: clamp(23px, 3vw, 31px);
+      }
+
+      .service-subtitle {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .badge {
+        flex: 0 0 auto;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: var(--success-soft);
+        color: var(--success);
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .badge.owner {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+
+      .service-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-5);
+      }
+
+      .service-actions .button {
+        min-height: 42px;
+        padding: 8px 14px;
+      }
+
+      .service-actions .button.outline {
+        border-color: var(--line);
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .service-actions .button.outline:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+      }
+
+      .steps {
+        display: grid;
+        gap: var(--space-3);
+        margin: var(--space-6) 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        transition:
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .step:has(input:checked) {
+        border-color: #b8dec9;
+        background: var(--success-soft);
+      }
+
+      .step input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        margin: 2px 0 0;
+        accent-color: var(--success);
+        cursor: pointer;
+      }
+
+      .step-title {
+        display: block;
+        font-weight: 850;
+      }
+
+      .step-description {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .code-row {
+        display: flex;
+        gap: var(--space-2);
+        align-items: stretch;
+        margin-top: var(--space-3);
+      }
+
+      .code-value {
+        display: flex;
+        min-width: 0;
+        flex: 1;
+        align-items: center;
+        padding: 10px 12px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f5f4f2;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .copy-button {
+        min-width: 72px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .copy-button:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+      }
+
+      .handoff {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: var(--space-3);
+        margin-top: var(--space-5);
+        padding: var(--space-4);
+        border-radius: var(--radius-sm);
+        background: var(--surface-soft);
+      }
+
+      .handoff-label {
+        padding-top: 1px;
+        color: var(--brand);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .handoff p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .mini-list {
+        margin: 8px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .mini-list li + li {
+        margin-top: 4px;
+      }
+
+      details {
+        border-top: 1px solid var(--line);
+      }
+
+      details:last-child {
+        border-bottom: 1px solid var(--line);
+      }
+
+      summary {
+        display: flex;
+        min-height: 58px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        cursor: pointer;
+        font-weight: 850;
+        list-style: none;
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary::after {
+        content: "+";
+        color: var(--brand);
+        font-size: 24px;
+        font-weight: 500;
+      }
+
+      details[open] summary::after {
+        content: "−";
+      }
+
+      details p {
+        margin: 0;
+        padding: 0 0 var(--space-5);
+        color: var(--muted);
+      }
+
+      .completion-box {
+        padding: var(--space-5);
+        border: 1px dashed #c8c2bd;
+        border-radius: var(--radius-sm);
+        background: #fbfaf8;
+      }
+
+      .completion-message {
+        margin: 0;
+        color: #443d39;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.75;
+        white-space: pre-wrap;
+      }
+
+      .completion-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+      }
+
+      .source-list {
+        display: grid;
+        gap: var(--space-3);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .source-list a {
+        display: block;
+        padding: var(--space-4);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        color: var(--info);
+        font-size: 14px;
+        font-weight: 750;
+        text-decoration: none;
+      }
+
+      .source-list a:hover {
+        border-color: #9fc9e7;
+        background: var(--info-soft);
+      }
+
+      .footer {
+        padding: 0 0 52px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 13px;
+      }
+
+      .toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 100;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: var(--ink);
+        color: #fff;
+        box-shadow: var(--shadow);
+        font-size: 14px;
+        font-weight: 750;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 860px) {
+        .hero {
+          padding-top: 24px;
+        }
+
+        .content-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .toc {
+          position: static;
+        }
+
+        .toc nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        .page-shell {
+          width: min(100% - 20px, 1180px);
+        }
+
+        .hero-card {
+          border-radius: 22px;
+        }
+
+        .hero-card::after {
+          right: -118px;
+          bottom: -170px;
+          opacity: 0.55;
+        }
+
+        .content-layout {
+          gap: var(--space-5);
+        }
+
+        .panel,
+        .service {
+          border-radius: 17px;
+        }
+
+        .prep-grid,
+        .owner-grid,
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .service-header {
+          display: grid;
+        }
+
+        .badge {
+          width: max-content;
+        }
+
+        .toc nav {
+          grid-template-columns: 1fr;
+        }
+
+        .code-row {
+          display: grid;
+        }
+
+        .copy-button {
+          min-height: 42px;
+        }
+      }
+
+      @media print {
+        @page {
+          margin: 14mm;
+          size: A4;
+        }
+
+        body {
+          background: #fff;
+          color: #000;
+          font-size: 11pt;
+        }
+
+        .page-shell {
+          width: 100%;
+        }
+
+        .hero {
+          padding: 0 0 18px;
+        }
+
+        .hero-card {
+          padding: 28px;
+          border-radius: 0;
+          box-shadow: none;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+
+        .hero-card::after,
+        .hero-actions,
+        .progress-panel,
+        .toc,
+        .copy-button,
+        .service-actions,
+        .toast {
+          display: none !important;
+        }
+
+        .content-layout {
+          display: block;
+          padding: 0;
+        }
+
+        .panel,
+        .service {
+          break-inside: avoid;
+          margin-top: 16px !important;
+          padding: 22px;
+          box-shadow: none;
+        }
+
+        .step {
+          break-inside: avoid;
+        }
+
+        a {
+          text-decoration: none;
+        }
+
+        .footer {
+          padding-top: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">본문으로 바로가기</a>
+
+    <header class="hero">
+      <div class="page-shell">
+        <div class="hero-card">
+          <div class="brand"><span class="brand-mark">s</span> siso-sign</div>
+          <p class="eyebrow">사업주 전용 · 계정 소유권 안내</p>
+          <h1>시소사인 온라인 계정 준비 안내</h1>
+          <p class="hero-description">
+            사업주님이 계정의 소유권을 안전하게 보유하고, 담당자에게 작업 권한만 주기 위한
+            쉬운 안내서입니다. 위에서부터 체크하며 진행해 주세요.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button" href="#prepare">1단계부터 시작하기</a>
+            <button class="button secondary" type="button" id="print-button">인쇄·PDF 저장</button>
+            <button class="button secondary" type="button" id="reset-button">체크 초기화</button>
+          </div>
+
+          <div class="progress-panel" aria-live="polite">
+            <span class="progress-label">전체 준비 진행률</span>
+            <span class="progress-count" id="progress-count">0 / 29 완료</span>
+            <div
+              class="progress-track"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-label="전체 준비 진행률"
+            >
+              <div class="progress-bar" id="progress-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-shell content-layout">
+      <aside class="toc" aria-label="목차">
+        <p class="toc-title">순서대로 진행</p>
+        <nav>
+          <a href="#prepare">1. 시작 전 준비</a>
+          <a href="#google">2. Google</a>
+          <a href="#naver-search">3. 네이버 검색</a>
+          <a href="#smartplace">4. 스마트플레이스</a>
+          <a href="#naver-ads">5. 네이버 광고</a>
+          <a href="#meta">6. Meta 광고</a>
+          <a href="#finish">7. 완료 알림</a>
+          <a href="#faq">자주 묻는 질문</a>
+        </nav>
+      </aside>
+
+      <main class="document" id="main">
+        <section class="section panel" id="prepare">
+          <div class="section-heading">
+            <span class="section-number">1</span>
+            <div>
+              <h2>시작 전에 준비해 주세요</h2>
+              <p>약 30분 정도 걸립니다. 결제와 서류 인증은 사업주님이 직접 진행해 주세요.</p>
+            </div>
+          </div>
+
+          <div class="notice">
+            <span class="notice-icon" aria-hidden="true">🔒</span>
+            <div>
+              <strong>비밀번호·인증번호·카드번호는 담당자에게 보내지 마세요.</strong>
+              <p>
+                사업주님이 직접 로그인한 뒤 서비스의 초대 또는 권한 설정 기능을 사용합니다.
+                담당자에게는 계정 ID나 초대용 이메일만 전달하면 됩니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="prep-grid" style="margin-top: 20px">
+            <article class="prep-card">
+              <h3>사업자 기본 정보</h3>
+              <p>사업자등록증, 대표 전화번호, 주소, 업종, 영업시간</p>
+            </article>
+            <article class="prep-card">
+              <h3>사업주 소유 계정</h3>
+              <p>Google 계정, 네이버 ID, 실제 본인의 Facebook 계정</p>
+            </article>
+            <article class="prep-card">
+              <h3>브랜드 채널</h3>
+              <p>기존 Facebook 페이지와 Instagram 계정이 있는지 확인</p>
+            </article>
+            <article class="prep-card">
+              <h3>결제 정보</h3>
+              <p>광고를 시작할 때 사용할 사업자 카드 또는 결제수단</p>
+            </article>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="manager-google">담당자 Google 이메일</label>
+              <input
+                id="manager-google"
+                data-field="manager-google"
+                type="email"
+                placeholder="담당자에게 확인 후 입력"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="manager-naver">담당자 네이버 ID</label>
+              <input
+                id="manager-naver"
+                data-field="manager-naver"
+                type="text"
+                placeholder="담당자에게 확인 후 입력"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="manager-meta">담당자 Meta 로그인 이메일</label>
+              <input
+                id="manager-meta"
+                data-field="manager-meta"
+                type="email"
+                placeholder="담당자에게 확인 후 입력"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="manager-meta-business">담당자 Meta Business ID (있는 경우)</label>
+              <input
+                id="manager-meta-business"
+                data-field="manager-meta-business"
+                type="text"
+                inputmode="numeric"
+                placeholder="없으면 비워 두세요"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="service" id="google">
+          <div class="service-header">
+            <div class="service-title-wrap">
+              <span class="service-logo google" aria-hidden="true">G</span>
+              <div>
+                <h2>Google Search Console</h2>
+                <p class="service-subtitle">Google 검색 노출과 사이트 상태를 확인하는 계정</p>
+              </div>
+            </div>
+            <span class="badge owner">사업주가 확인된 소유자</span>
+          </div>
+
+          <div class="service-actions">
+            <a class="button" href="https://accounts.google.com/signup" target="_blank" rel="noopener noreferrer">
+              Google 계정 만들기
+            </a>
+            <a class="button outline" href="https://search.google.com/search-console/" target="_blank" rel="noopener noreferrer">
+              Search Console 열기
+            </a>
+          </div>
+
+          <ol class="steps">
+            <li class="step">
+              <input id="g-1" data-check="g-1" type="checkbox" />
+              <label for="g-1">
+                <span class="step-title">사업주가 계속 관리할 Google 계정으로 로그인합니다.</span>
+                <span class="step-description">
+                  새 Gmail이 꼭 필요한 것은 아닙니다. 회사 이메일로 Google 계정을 만들 수도 있습니다.
+                </span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="g-2" data-check="g-2" type="checkbox" />
+              <div>
+                <label for="g-2">
+                  <span class="step-title">Search Console에서 속성 추가를 누르고 ‘URL 접두어’를 선택합니다.</span>
+                  <span class="step-description">아래 주소를 그대로 붙여 넣으세요.</span>
+                </label>
+                <span class="code-row">
+                  <span class="code-value" id="site-url">https://www.siso-sign.com/</span>
+                  <button class="copy-button" type="button" data-copy="site-url">복사</button>
+                </span>
+              </div>
+            </li>
+            <li class="step">
+              <input id="g-3" data-check="g-3" type="checkbox" />
+              <label for="g-3">
+                <span class="step-title">소유권 확인에서 ‘HTML 태그’ 또는 ‘HTML 파일’을 선택합니다.</span>
+                <span class="step-description">
+                  표시된 태그 또는 내려받은 파일만 담당자에게 보내세요. Google 비밀번호는 보내지 않습니다.
+                </span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="g-4" data-check="g-4" type="checkbox" />
+              <label for="g-4">
+                <span class="step-title">담당자가 “사이트 반영 완료”라고 알려주면 ‘확인’을 누릅니다.</span>
+                <span class="step-description">성공 메시지가 나오면 사업주 계정이 확인된 소유자가 됩니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="g-5" data-check="g-5" type="checkbox" />
+              <label for="g-5">
+                <span class="step-title">설정 → 사용자 및 권한 → 사용자 추가로 담당자를 초대합니다.</span>
+                <span class="step-description">
+                  담당자 Google 이메일을 입력하고 ‘전체 사용자’ 권한을 선택하세요. 소유자 권한은 사업주가 유지합니다.
+                </span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="g-6" data-check="g-6" type="checkbox" />
+              <div>
+                <label for="g-6">
+                  <span class="step-title">Sitemaps 메뉴에서 사이트맵 주소를 제출합니다.</span>
+                </label>
+                <span class="code-row">
+                  <span class="code-value" id="sitemap-url">https://www.siso-sign.com/sitemap.xml</span>
+                  <button class="copy-button" type="button" data-copy="sitemap-url">복사</button>
+                </span>
+              </div>
+            </li>
+          </ol>
+
+          <div class="handoff">
+            <span class="handoff-label">완료 기준</span>
+            <p>사업주 계정에 ‘확인된 소유자’가 표시되고, 담당자가 ‘전체 사용자’로 보이면 끝입니다.</p>
+          </div>
+        </section>
+
+        <section class="service" id="naver-search">
+          <div class="service-header">
+            <div class="service-title-wrap">
+              <span class="service-logo naver" aria-hidden="true">N</span>
+              <div>
+                <h2>네이버 Search Advisor</h2>
+                <p class="service-subtitle">네이버 검색 수집·색인·사이트맵을 관리하는 계정</p>
+              </div>
+            </div>
+            <span class="badge owner">사업주 계정 유지</span>
+          </div>
+
+          <div class="service-actions">
+            <a class="button" href="https://www.naver.com/" target="_blank" rel="noopener noreferrer">
+              네이버 계정 확인
+            </a>
+            <a class="button outline" href="https://searchadvisor.naver.com/" target="_blank" rel="noopener noreferrer">
+              Search Advisor 열기
+            </a>
+          </div>
+
+          <ol class="steps">
+            <li class="step">
+              <input id="ns-1" data-check="ns-1" type="checkbox" />
+              <label for="ns-1">
+                <span class="step-title">사업주가 관리할 네이버 ID로 로그인합니다.</span>
+                <span class="step-description">담당자에게 네이버 비밀번호나 휴대전화 인증번호를 보내지 마세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="ns-2" data-check="ns-2" type="checkbox" />
+              <div>
+                <label for="ns-2">
+                  <span class="step-title">웹마스터 도구 → 사이트 등록에서 홈페이지 주소를 입력합니다.</span>
+                </label>
+                <span class="code-row">
+                  <span class="code-value" id="naver-site-url">https://www.siso-sign.com/</span>
+                  <button class="copy-button" type="button" data-copy="naver-site-url">복사</button>
+                </span>
+              </div>
+            </li>
+            <li class="step">
+              <input id="ns-3" data-check="ns-3" type="checkbox" />
+              <label for="ns-3">
+                <span class="step-title">소유확인용 HTML 파일 또는 HTML 태그를 담당자에게 보냅니다.</span>
+                <span class="step-description">
+                  담당자가 홈페이지에 적용할 때까지 Search Advisor 화면은 열어 둬도 됩니다.
+                </span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="ns-4" data-check="ns-4" type="checkbox" />
+              <label for="ns-4">
+                <span class="step-title">담당자의 반영 완료 연락을 받은 뒤 ‘소유확인’을 누릅니다.</span>
+                <span class="step-description">등록된 사이트가 웹마스터 도구 목록에 보이는지 확인하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="ns-5" data-check="ns-5" type="checkbox" />
+              <div>
+                <label for="ns-5">
+                  <span class="step-title">요청 → 사이트맵 제출에서 sitemap.xml을 입력합니다.</span>
+                </label>
+                <span class="code-row">
+                  <span class="code-value" id="naver-sitemap-value">sitemap.xml</span>
+                  <button class="copy-button" type="button" data-copy="naver-sitemap-value">복사</button>
+                </span>
+              </div>
+            </li>
+          </ol>
+
+          <div class="notice info" style="margin-top: 20px">
+            <span class="notice-icon" aria-hidden="true">ℹ️</span>
+            <div>
+              <strong>네이버 Search Advisor 계정은 계속 보관해 주세요.</strong>
+              <p>
+                Google처럼 작업자를 초대하는 권한 메뉴가 명확하지 않으므로, 사업주 계정은 소유 확인용으로 유지하고
+                담당자는 별도 계정으로 독립 소유확인을 진행합니다.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="service" id="smartplace">
+          <div class="service-header">
+            <div class="service-title-wrap">
+              <span class="service-logo naver" aria-hidden="true">P</span>
+              <div>
+                <h2>네이버 스마트플레이스</h2>
+                <p class="service-subtitle">네이버 지도에 표시되는 업체 정보의 주인 권한</p>
+              </div>
+            </div>
+            <span class="badge owner">사업주가 주인 권한 보유</span>
+          </div>
+
+          <div class="service-actions">
+            <a class="button" href="https://new.smartplace.naver.com/" target="_blank" rel="noopener noreferrer">
+              스마트플레이스 열기
+            </a>
+            <a
+              class="button outline"
+              href="https://help.naver.com/service/30026/contents/20522?lang=ko&amp;osType=PC"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              공식 권한 위임 안내
+            </a>
+          </div>
+
+          <ol class="steps">
+            <li class="step">
+              <input id="sp-1" data-check="sp-1" type="checkbox" />
+              <label for="sp-1">
+                <span class="step-title">사업주 네이버 ID로 로그인하고 업체명을 먼저 검색합니다.</span>
+                <span class="step-description">이미 등록된 업체가 있다면 새로 만들지 말고 기존 업체를 선택하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="sp-2" data-check="sp-2" type="checkbox" />
+              <label for="sp-2">
+                <span class="step-title">기존 업체면 ‘주인 권한 신청’, 없다면 ‘신규 업체 등록’을 선택합니다.</span>
+                <span class="step-description">동일한 업체를 중복으로 등록하면 심사가 지연될 수 있습니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="sp-3" data-check="sp-3" type="checkbox" />
+              <label for="sp-3">
+                <span class="step-title">대표번호 ARS 또는 사업자등록증으로 사업주 인증을 완료합니다.</span>
+                <span class="step-description">사업자등록증과 인증번호는 사업주님이 화면에 직접 입력해 주세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="sp-4" data-check="sp-4" type="checkbox" />
+              <label for="sp-4">
+                <span class="step-title">업체명·주소·전화번호·영업시간이 실제 정보와 같은지 확인합니다.</span>
+                <span class="step-description">업체명은 사업자등록증이나 실제 간판에서 확인되는 명칭을 사용합니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="sp-5" data-check="sp-5" type="checkbox" />
+              <label for="sp-5">
+                <span class="step-title">담당자가 직접 초기 설정해야 한다면 공식 ‘주인 권한 위임’을 사용합니다.</span>
+                <span class="step-description">
+                  담당자 네이버 ID로 위임하고, 설정 완료 후 담당자가 다시 사업주 ID로 위임합니다. 상대방은 7일 안에
+                  수락해야 합니다.
+                </span>
+              </label>
+            </li>
+          </ol>
+
+          <div class="notice warning" style="margin-top: 20px">
+            <span class="notice-icon" aria-hidden="true">⚠️</span>
+            <div>
+              <strong>스마트플레이스는 주인 권한을 아무 계정에나 넘기지 마세요.</strong>
+              <p>
+                위임 기간에는 상대방이 업체 정보를 관리할 수 있습니다. 계약된 담당자 ID인지 확인하고, 작업이 끝나면
+                반드시 사업주 ID로 권한을 돌려받으세요.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="service" id="naver-ads">
+          <div class="service-header">
+            <div class="service-title-wrap">
+              <span class="service-logo naver" aria-hidden="true">AD</span>
+              <div>
+                <h2>네이버 광고계정</h2>
+                <p class="service-subtitle">플레이스 검색광고의 결제·사업자정보·운영 권한</p>
+              </div>
+            </div>
+            <span class="badge owner">사업주가 마스터</span>
+          </div>
+
+          <div class="service-actions">
+            <a class="button" href="https://ads.naver.com/" target="_blank" rel="noopener noreferrer">
+              네이버 광고주센터 열기
+            </a>
+            <a
+              class="button outline"
+              href="https://ads.naver.com/help/faq/53"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              공식 권한 설정 안내
+            </a>
+          </div>
+
+          <ol class="steps">
+            <li class="step">
+              <input id="na-1" data-check="na-1" type="checkbox" />
+              <label for="na-1">
+                <span class="step-title">사업주 네이버 ID로 광고주센터에 로그인합니다.</span>
+                <span class="step-description">광고계정의 마스터는 사업주가 유지해야 합니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="na-2" data-check="na-2" type="checkbox" />
+              <label for="na-2">
+                <span class="step-title">‘광고 계정 만들기’를 눌러 실제 사업자정보로 계정을 생성합니다.</span>
+                <span class="step-description">다른 사람의 사업자정보나 담당자의 개인 사업자로 만들지 마세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="na-3" data-check="na-3" type="checkbox" />
+              <label for="na-3">
+                <span class="step-title">검색광고 홈 → 내 정보 → 권한설정으로 이동합니다.</span>
+                <span class="step-description">담당자 네이버 ID에 광고 운영 권한을 부여하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="na-4" data-check="na-4" type="checkbox" />
+              <label for="na-4">
+                <span class="step-title">스마트플레이스 업체와 광고계정을 연결할 준비를 마칩니다.</span>
+                <span class="step-description">광고 캠페인과 소재 작성은 권한을 받은 담당자가 이어서 진행합니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="na-5" data-check="na-5" type="checkbox" />
+              <label for="na-5">
+                <span class="step-title">광고안과 예산을 확인한 뒤 사업주가 결제수단을 직접 등록합니다.</span>
+                <span class="step-description">결제수단 등록만으로 광고가 시작되지는 않습니다. 집행 전 최종 승인을 요청합니다.</span>
+              </label>
+            </li>
+          </ol>
+
+          <div class="handoff">
+            <span class="handoff-label">완료 기준</span>
+            <p>사업주는 마스터로 남고, 담당자는 권한설정에서 운영 가능한 계정으로 보이면 끝입니다.</p>
+          </div>
+        </section>
+
+        <section class="service" id="meta">
+          <div class="service-header">
+            <div class="service-title-wrap">
+              <span class="service-logo meta" aria-hidden="true">M</span>
+              <div>
+                <h2>Meta Business Suite·광고계정</h2>
+                <p class="service-subtitle">Facebook·Instagram·광고계정·픽셀을 한곳에서 관리</p>
+              </div>
+            </div>
+            <span class="badge owner">사업주 포트폴리오 소유</span>
+          </div>
+
+          <div class="service-actions">
+            <a class="button" href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer">
+              Meta Business Suite 열기
+            </a>
+            <a
+              class="button outline"
+              href="https://www.facebook.com/help/289207354498410/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              공식 페이지 권한 안내
+            </a>
+          </div>
+
+          <ol class="steps">
+            <li class="step">
+              <input id="m-1" data-check="m-1" type="checkbox" />
+              <label for="m-1">
+                <span class="step-title">사업주 본인의 실제 Facebook 계정으로 로그인합니다.</span>
+                <span class="step-description">회사 이름으로 가짜 개인계정을 만들거나 비밀번호를 공동 사용하지 마세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-2" data-check="m-2" type="checkbox" />
+              <label for="m-2">
+                <span class="step-title">2단계 인증을 켜고 ‘시소사인’ Business Portfolio를 만듭니다.</span>
+                <span class="step-description">사업자명과 계속 사용할 사업용 이메일을 입력하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-3" data-check="m-3" type="checkbox" />
+              <label for="m-3">
+                <span class="step-title">기존 Facebook 페이지와 Instagram 계정이 있는지 먼저 확인합니다.</span>
+                <span class="step-description">기존 채널이 있다면 새로 만들지 말고 Business Portfolio에 연결합니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-4" data-check="m-4" type="checkbox" />
+              <label for="m-4">
+                <span class="step-title">Business Portfolio 안에서 시소사인 광고계정을 만듭니다.</span>
+                <span class="step-description">국가 대한민국, 시간대 Asia/Seoul, 통화 KRW가 맞는지 확인하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-5" data-check="m-5" type="checkbox" />
+              <label for="m-5">
+                <span class="step-title">이벤트 관리자에서 시소사인 Meta Pixel(데이터 세트)을 만듭니다.</span>
+                <span class="step-description">생성된 Pixel ID만 담당자에게 전달하면 홈페이지에 연결할 수 있습니다.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-6" data-check="m-6" type="checkbox" />
+              <label for="m-6">
+                <span class="step-title">설정 → 사람 → 사람 초대에서 담당자를 추가합니다.</span>
+                <span class="step-description">
+                  담당자 Meta 이메일을 입력하고 부분 권한을 선택한 뒤 페이지·Instagram·광고계정·Pixel을 할당하세요.
+                </span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-7" data-check="m-7" type="checkbox" />
+              <label for="m-7">
+                <span class="step-title">담당자에게 광고 관리와 Pixel 관리에 필요한 작업 권한만 켭니다.</span>
+                <span class="step-description">Business Portfolio 전체 관리 권한은 사업주가 유지하세요.</span>
+              </label>
+            </li>
+            <li class="step">
+              <input id="m-8" data-check="m-8" type="checkbox" />
+              <label for="m-8">
+                <span class="step-title">광고안과 예산을 승인한 뒤 사업주가 결제수단을 직접 등록합니다.</span>
+                <span class="step-description">광고 캠페인은 별도의 최종 확인 후 시작합니다.</span>
+              </label>
+            </li>
+          </ol>
+
+          <div class="notice warning" style="margin-top: 20px">
+            <span class="notice-icon" aria-hidden="true">⚠️</span>
+            <div>
+              <strong>광고계정과 Pixel은 담당자 개인 Business Portfolio에서 만들지 않습니다.</strong>
+              <p>
+                시소사인 사업주가 소유한 Business Portfolio 안에서 만들어야 계약 종료 후에도 모든 데이터와 광고 이력을
+                사업주가 그대로 보유할 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section panel" id="finish">
+          <div class="section-heading">
+            <span class="section-number">7</span>
+            <div>
+              <h2>완료되면 담당자에게 알려주세요</h2>
+              <p>아래 문장을 복사해 빈칸만 채워 보내면 됩니다.</p>
+            </div>
+          </div>
+
+          <div class="completion-box">
+            <pre class="completion-message" id="completion-message">시소사인 계정 준비를 완료했습니다.
+
+1. Google Search Console: 완료 / 진행 중
+2. 네이버 Search Advisor: 완료 / 진행 중
+3. 스마트플레이스 주인 권한: 완료 / 심사 중
+4. 네이버 광고계정 및 권한설정: 완료 / 진행 중
+5. Meta Business Portfolio 및 담당자 초대: 완료 / 진행 중
+
+사업주 Google 이메일: 
+사업주 네이버 ID: 
+Meta Business Portfolio 이름 또는 ID: 
+추가로 확인할 내용: </pre>
+            <div class="completion-actions">
+              <button class="button" type="button" data-copy="completion-message">완료 메시지 복사</button>
+            </div>
+          </div>
+
+          <div class="notice" style="margin-top: 20px">
+            <span class="notice-icon" aria-hidden="true">✓</span>
+            <div>
+              <strong>보내도 되는 것</strong>
+              <p>초대용 이메일, 네이버 ID, Business ID, 공개된 Pixel ID, 소유확인 HTML 태그·파일</p>
+            </div>
+          </div>
+          <div class="notice warning" style="margin-top: 12px">
+            <span class="notice-icon" aria-hidden="true">×</span>
+            <div>
+              <strong>보내면 안 되는 것</strong>
+              <p>비밀번호, 문자·OTP 인증번호, 복구코드, 카드번호, 신분증 원본</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section panel" id="faq">
+          <div class="section-heading">
+            <span class="section-number">?</span>
+            <div>
+              <h2>자주 묻는 질문</h2>
+              <p>막히는 부분이 생기면 먼저 아래 내용을 확인해 주세요.</p>
+            </div>
+          </div>
+
+          <details>
+            <summary>이미 다른 사람이 만든 계정이나 페이지가 있어요.</summary>
+            <p>
+              새로 만들지 마세요. 기존 소유자에게 사업주 계정을 소유자 또는 전체 관리자로 추가해 달라고 요청합니다.
+              중복 페이지와 중복 플레이스는 고객 리뷰와 광고 이력이 나뉠 수 있습니다.
+            </p>
+          </details>
+          <details>
+            <summary>담당자에게 전체 관리자 권한을 줘야 하나요?</summary>
+            <p>
+              아닙니다. Google은 전체 사용자, 네이버 광고는 운영 권한, Meta는 할당된 자산의 부분 권한이면 보통 충분합니다.
+              소유자·마스터·결제 권한은 사업주가 유지하세요.
+            </p>
+          </details>
+          <details>
+            <summary>광고는 계정을 만들자마자 시작되나요?</summary>
+            <p>
+              아닙니다. 계정 생성, 결제수단 등록, 캠페인 작성은 서로 다른 단계입니다. 광고 문구·대상 지역·월 예산을
+              사업주가 최종 승인한 뒤에만 집행합니다.
+            </p>
+          </details>
+          <details>
+            <summary>담당자와 계약이 끝나면 어떻게 하나요?</summary>
+            <p>
+              각 서비스의 사용자·권한 메뉴에서 담당자 권한만 제거하면 됩니다. 사업주 계정과 사업주 소유의 광고계정,
+              페이지, Pixel, 검색 데이터는 그대로 남습니다.
+            </p>
+          </details>
+        </section>
+
+        <section class="section panel" id="sources">
+          <div class="section-heading">
+            <span class="section-number">i</span>
+            <div>
+              <h2>공식 도움말</h2>
+              <p>화면 구성이 달라졌다면 아래 공식 문서를 확인해 주세요.</p>
+            </div>
+          </div>
+          <ul class="source-list">
+            <li>
+              <a href="https://support.google.com/webmasters/answer/7687615?hl=ko" target="_blank" rel="noopener noreferrer">
+                Google Search Console 소유자·사용자·권한 관리
+              </a>
+            </li>
+            <li>
+              <a href="https://searchadvisor.naver.com/guide/faq-start-register" target="_blank" rel="noopener noreferrer">
+                네이버 Search Advisor 사이트 등록 및 소유확인
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://help.naver.com/service/30026/contents/20522?lang=ko&amp;osType=PC"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                네이버 스마트플레이스 주인 권한 위임
+              </a>
+            </li>
+            <li>
+              <a href="https://ads.naver.com/help/faq/53" target="_blank" rel="noopener noreferrer">
+                네이버 광고계정 권한설정 안내
+              </a>
+            </li>
+            <li>
+              <a href="https://www.facebook.com/help/289207354498410/" target="_blank" rel="noopener noreferrer">
+                Meta Facebook 페이지 접근 권한 안내
+              </a>
+            </li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer page-shell">
+      <p>시소사인 온라인 계정 준비 안내 · 마지막 업데이트 2026-08-29</p>
+      <p>이 문서는 계정 소유권과 작업 권한을 안전하게 분리하기 위한 안내서입니다.</p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">복사했습니다.</div>
+
+    <script>
+      (() => {
+        const checklistKey = "siso-owner-setup-checklist-v1";
+        const fieldKey = "siso-owner-setup-fields-v1";
+        const checks = Array.from(document.querySelectorAll("[data-check]"));
+        const fields = Array.from(document.querySelectorAll("[data-field]"));
+        const progressBar = document.getElementById("progress-bar");
+        const progressTrack = document.querySelector("[role='progressbar']");
+        const progressCount = document.getElementById("progress-count");
+        const toast = document.getElementById("toast");
+        let toastTimer;
+
+        function readStorage(key) {
+          try {
+            return JSON.parse(localStorage.getItem(key) || "{}");
+          } catch {
+            return {};
+          }
+        }
+
+        function writeStorage(key, value) {
+          try {
+            localStorage.setItem(key, JSON.stringify(value));
+          } catch {
+            // 파일을 직접 열었을 때 저장소 사용이 제한되면 현재 화면에서만 작동합니다.
+          }
+        }
+
+        function updateProgress() {
+          const completed = checks.filter((check) => check.checked).length;
+          const total = checks.length;
+          const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+          progressBar.style.width = `${percent}%`;
+          progressTrack.setAttribute("aria-valuenow", String(percent));
+          progressCount.textContent = `${completed} / ${total} 완료`;
+        }
+
+        function saveChecks() {
+          const state = Object.fromEntries(checks.map((check) => [check.dataset.check, check.checked]));
+          writeStorage(checklistKey, state);
+          updateProgress();
+        }
+
+        function saveFields() {
+          const state = Object.fromEntries(fields.map((field) => [field.dataset.field, field.value]));
+          writeStorage(fieldKey, state);
+        }
+
+        function showToast(message) {
+          clearTimeout(toastTimer);
+          toast.textContent = message;
+          toast.classList.add("show");
+          toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+        }
+
+        async function copyText(text) {
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch {
+            const area = document.createElement("textarea");
+            area.value = text;
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.select();
+            document.execCommand("copy");
+            area.remove();
+          }
+          showToast("복사했습니다.");
+        }
+
+        const savedChecks = readStorage(checklistKey);
+        checks.forEach((check) => {
+          check.checked = Boolean(savedChecks[check.dataset.check]);
+          check.addEventListener("change", saveChecks);
+        });
+
+        const savedFields = readStorage(fieldKey);
+        fields.forEach((field) => {
+          field.value = savedFields[field.dataset.field] || "";
+          field.addEventListener("input", saveFields);
+        });
+
+        document.querySelectorAll("[data-copy]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const target = document.getElementById(button.dataset.copy);
+            if (target) copyText(target.textContent.trim());
+          });
+        });
+
+        document.getElementById("print-button").addEventListener("click", () => window.print());
+        document.getElementById("reset-button").addEventListener("click", () => {
+          const shouldReset = window.confirm("체크한 진행 상황과 담당자 입력값을 모두 초기화할까요?");
+          if (!shouldReset) return;
+          checks.forEach((check) => {
+            check.checked = false;
+          });
+          fields.forEach((field) => {
+            field.value = "";
+          });
+          writeStorage(checklistKey, {});
+          writeStorage(fieldKey, {});
+          updateProgress();
+          showToast("초기화했습니다.");
+        });
+
+        updateProgress();
+      })();
+    </script>
+  </body>
+</html>

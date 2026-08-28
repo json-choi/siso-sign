@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import MetaPixel from "@/components/analytics/MetaPixel";
+import {
+  GOOGLE_SITE_VERIFICATION,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,13 +28,12 @@ const calSans = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://siso-sign.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "시소사인 | 간판 제작 · 사이니지 디자인 · 브랜딩 전문",
     template: "%s | 시소사인",
   },
-  description:
-    "시소사인은 공간의 가치를 높이는 간판 제작, 사이니지 디자인, 브랜딩 전문 에이전시입니다. 전략, 디자인, 기술의 조화로 브랜드의 비주얼 아이덴티티를 완성합니다.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "간판 제작",
     "사이니지",
@@ -56,17 +62,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://siso-sign.com",
-    siteName: "시소사인",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     title: "시소사인 | 간판 제작 · 사이니지 디자인 · 브랜딩 전문",
     description:
       "시소사인은 공간의 가치를 높이는 간판 제작, 사이니지 디자인, 브랜딩 전문 에이전시입니다.",
     images: [
       {
-        url: "/logo.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "시소사인 로고",
+        alt: "시소사인 - 간판 제작, 사이니지 디자인, 브랜딩",
       },
     ],
   },
@@ -75,7 +81,7 @@ export const metadata: Metadata = {
     title: "시소사인 | 간판 제작 · 사이니지 디자인 · 브랜딩 전문",
     description:
       "시소사인은 공간의 가치를 높이는 간판 제작, 사이니지 디자인, 브랜딩 전문 에이전시입니다.",
-    images: ["/logo.jpg"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -89,13 +95,17 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // 구글 서치콘솔 인증 후 아래 주석 해제하고 값 입력
-    // google: "구글_인증_코드",
-    // 네이버 웹마스터 인증 후 아래 주석 해제하고 값 입력
-    // other: { "naver-site-verification": "네이버_인증_코드" },
+    google: GOOGLE_SITE_VERIFICATION,
+    ...(process.env.NAVER_SITE_VERIFICATION
+      ? {
+          other: {
+            "naver-site-verification": process.env.NAVER_SITE_VERIFICATION,
+          },
+        }
+      : {}),
   },
   alternates: {
-    canonical: "https://siso-sign.com",
+    canonical: SITE_URL,
   },
 };
 
@@ -110,6 +120,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${calSans.variable} antialiased`}
       >
         {children}
+        <MetaPixel />
       </body>
     </html>
   );

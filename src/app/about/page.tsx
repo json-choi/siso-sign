@@ -1,14 +1,24 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { DynamicIcon } from "@/components/admin/IconPicker";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { SITE_URL } from "@/lib/site";
+import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "About | siso-sign",
+  title: "회사 소개",
   description:
     "시소사인은 공간의 가치를 높이는 시각적 정체성을 만드는 크리에이티브 에이전시입니다.",
+  alternates: {
+    canonical: `${SITE_URL}/about`,
+  },
+  openGraph: {
+    title: "회사 소개 | 시소사인",
+    description:
+      "시소사인은 공간의 가치를 높이는 시각적 정체성을 만드는 크리에이티브 에이전시입니다.",
+    url: `${SITE_URL}/about`,
+  },
 };
 
 export const revalidate = 0;

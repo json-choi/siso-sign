@@ -1,14 +1,23 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Palette, Layout, Frame, PenTool, Layers, Box, Monitor, Type } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
 import RichContent from '@/components/RichContent';
+import { SITE_URL } from '@/lib/site';
+import { supabase } from '@/lib/supabase';
 import type { Service } from '@/types/database';
 
 export const metadata: Metadata = {
-  title: 'Service | siso-sign',
-  description: '시소사인의 전문 서비스 - 브랜딩, 사이니지, 전시 디자인',
+  title: '서비스',
+  description: '브랜딩, 간판 제작, 사이니지 시스템, 전시 공간 디자인까지 시소사인의 전문 서비스를 확인하세요.',
+  alternates: {
+    canonical: `${SITE_URL}/service`,
+  },
+  openGraph: {
+    title: '서비스 | 시소사인',
+    description: '브랜딩, 간판 제작, 사이니지 시스템, 전시 공간 디자인까지 시소사인의 전문 서비스를 확인하세요.',
+    url: `${SITE_URL}/service`,
+  },
 };
 
 export const revalidate = 0;

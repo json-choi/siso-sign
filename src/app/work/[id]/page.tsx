@@ -1,12 +1,15 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { notFound } from "next/navigation";
-import ImageCarousel from "@/components/ImageCarousel";
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import ImageCarousel from "@/components/ImageCarousel";
+import RichContent from "@/components/RichContent";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { SITE_URL } from "@/lib/site";
+import { supabase } from "@/lib/supabase";
+import { toPlainText } from "@/lib/text";
 
 export const revalidate = 0;
 
@@ -27,19 +30,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const description =
+    toPlainText(portfolio.description) ||
+    `${portfolio.title} - 시소사인 간판·사이니지 디자인 포트폴리오`;
+
   return {
     title: portfolio.title,
-    description: portfolio.description || `${portfolio.title} - 시소사인 포트폴리오`,
+    description,
     openGraph: {
       title: `${portfolio.title} | 시소사인`,
-      description: portfolio.description || `${portfolio.title} - 시소사인 포트폴리오`,
-      url: `https://siso-sign.com/work/${id}`,
+      description,
+      url: `${SITE_URL}/work/${id}`,
       images: portfolio.image_url
         ? [{ url: portfolio.image_url, alt: portfolio.title }]
         : undefined,
     },
     alternates: {
-      canonical: `https://siso-sign.com/work/${id}`,
+      canonical: `${SITE_URL}/work/${id}`,
     },
   };
 }
@@ -56,12 +63,17 @@ async function getPortfolio(id: string) {
 }
 
 async function getRelatedPortfolios(currentId: string, category: string | null) {
-  const { data } = await supabase
+  let query = supabase
     .from('portfolios')
     .select('*')
     .eq('is_published', true)
-    .neq('id', currentId)
-    .limit(3);
+    .neq('id', currentId);
+
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { data } = await query.limit(3);
   
   return data || [];
 }
@@ -118,7 +130,14 @@ export default async function ProjectPage({ params }: PageProps) {
                 {project.category}
               </span>
               <h1 className="text-4xl font-bold text-white mt-2 mb-6">{project.title}</h1>
-              <p className="text-gray-400 leading-relaxed">{project.description}</p>
+              {project.description?.includes('<') ? (
+                <RichContent
+                  html={project.description}
+                  className="text-gray-400 leading-relaxed"
+                />
+              ) : (
+                <p className="text-gray-400 leading-relaxed">{project.description}</p>
+              )}
             </div>
           </div>
 

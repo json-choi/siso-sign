@@ -1,12 +1,22 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Header from '@/components/layout/Header';
+import TrackedContactLink from '@/components/analytics/TrackedContactLink';
 import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import { SITE_URL } from '@/lib/site';
+import { supabase } from '@/lib/supabase';
 
 export const metadata: Metadata = {
-  title: 'Contact | siso-sign',
-  description: '시소사인과 함께 프로젝트를 시작하세요. 연락처 및 문의 안내',
+  title: '프로젝트 문의',
+  description: '간판 제작, 사이니지 디자인, 브랜딩 프로젝트를 시소사인에 문의하세요. 연락처와 오시는 길을 안내합니다.',
+  alternates: {
+    canonical: `${SITE_URL}/contact`,
+  },
+  openGraph: {
+    title: '프로젝트 문의 | 시소사인',
+    description: '간판 제작, 사이니지 디자인, 브랜딩 프로젝트를 시소사인에 문의하세요.',
+    url: `${SITE_URL}/contact`,
+  },
 };
 
 export const revalidate = 0;
@@ -52,7 +62,13 @@ export default async function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-2">Email</h3>
-                  <p className="text-lg text-white">{email}</p>
+                  <TrackedContactLink
+                    href={`mailto:${email}`}
+                    channel="email"
+                    className="text-lg text-white transition-colors hover:text-primary"
+                  >
+                    {email}
+                  </TrackedContactLink>
                 </div>
               </div>
 
@@ -63,7 +79,13 @@ export default async function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-2">Phone</h3>
-                    <p className="text-lg text-white">{phone}</p>
+                    <TrackedContactLink
+                      href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+                      channel="phone"
+                      className="text-lg text-white transition-colors hover:text-primary"
+                    >
+                      {phone}
+                    </TrackedContactLink>
                   </div>
                 </div>
               )}
@@ -87,12 +109,13 @@ export default async function ContactPage() {
               </h2>
               
               <div>
-                <a 
+                <TrackedContactLink
                   href={`mailto:${email}`}
+                  channel="email"
                   className="inline-block bg-primary text-black px-8 py-4 rounded-lg font-semibold hover:bg-white transition-colors duration-300"
                 >
                   이메일 보내기
-                </a>
+                </TrackedContactLink>
               </div>
             </div>
           </div>

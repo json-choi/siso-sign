@@ -1,9 +1,11 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { supabase } from "@/lib/supabase";
+import { toPlainText } from "@/lib/text";
 
 export const revalidate = 0;
 
@@ -25,18 +27,29 @@ async function getBusinessSettings() {
   return settings;
 }
 
-function buildJsonLd(settings: Record<string, string>) {
+async function getSocialLinks() {
+  const { data } = await supabase
+    .from("social_links")
+    .select("url")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  return (data || [])
+    .map((item) => item.url)
+    .filter((url): url is string => /^https?:\/\//.test(url));
+}
+
+function buildJsonLd(settings: Record<string, string>, socialLinks: string[]) {
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": "https://siso-sign.com",
+    "@type": "ProfessionalService",
+    "@id": `${SITE_URL}/#business`,
     name: settings.business_name || "시소사인",
     alternateName: "siso-sign",
-    description:
-      "시소사인은 공간의 가치를 높이는 간판 제작, 사이니지 디자인, 브랜딩 전문 에이전시입니다.",
-    url: "https://siso-sign.com",
-    logo: "https://siso-sign.com/logo.jpg",
-    image: "https://siso-sign.com/logo.jpg",
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.jpg`,
+    image: `${SITE_URL}/opengraph-image`,
     email: settings.business_email || "siso-sign@naver.com",
     telephone: settings.business_phone || undefined,
     address: settings.business_address
@@ -52,7 +65,7 @@ function buildJsonLd(settings: Record<string, string>) {
       name: "대한민국",
     },
     serviceType: ["간판 제작", "사이니지 디자인", "브랜딩", "공간 디자인"],
-    sameAs: [],
+    sameAs: socialLinks,
   };
 }
 
@@ -68,12 +81,13 @@ async function getPortfolios() {
 }
 
 export default async function Home() {
-  const [portfolios, businessSettings] = await Promise.all([
+  const [portfolios, businessSettings, socialLinks] = await Promise.all([
     getPortfolios(),
     getBusinessSettings(),
+    getSocialLinks(),
   ]);
 
-  const jsonLd = buildJsonLd(businessSettings);
+  const jsonLd = buildJsonLd(businessSettings, socialLinks);
 
   const fallbackProjects = [
     {
@@ -112,7 +126,9 @@ export default async function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
       />
       <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
         <Header />
@@ -197,7 +213,7 @@ export default async function Home() {
                       {project.title}
                     </h3>
                     <p className="text-sm text-gray-300 mt-2">
-                      {project.description}
+                      {toPlainText(project.description)}
                     </p>
                   </div>
                 </Link>

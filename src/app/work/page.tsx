@@ -1,9 +1,11 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import Link from "next/link";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import { SITE_URL } from "@/lib/site";
+import { supabase } from "@/lib/supabase";
+import { toPlainText } from "@/lib/text";
 
 export const metadata: Metadata = {
   title: "포트폴리오",
@@ -13,10 +15,10 @@ export const metadata: Metadata = {
     title: "포트폴리오 | 시소사인",
     description:
       "시소사인의 간판 제작, 사이니지 디자인, 브랜딩 포트폴리오입니다.",
-    url: "https://siso-sign.com/work",
+    url: `${SITE_URL}/work`,
   },
   alternates: {
-    canonical: "https://siso-sign.com/work",
+    canonical: `${SITE_URL}/work`,
   },
 };
 
@@ -82,7 +84,7 @@ export default async function WorkPage() {
                     {project.category}
                   </span>
                   <h3 className="text-xl font-bold text-white mt-1">{project.title}</h3>
-                  <p className="text-sm text-gray-300 mt-2 line-clamp-2">{project.description}</p>
+                  <p className="text-sm text-gray-300 mt-2 line-clamp-2">{toPlainText(project.description)}</p>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300">
                   <h3 className="text-lg font-semibold text-white">{project.title}</h3>

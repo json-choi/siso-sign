@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Search and advertising integrations
+
+- The canonical production URL is `https://www.siso-sign.com`.
+- Google Search Console verification is rendered from the root metadata.
+- Set `NAVER_SITE_VERIFICATION` to the `content` value issued by Naver Search Advisor.
+- Set `NEXT_PUBLIC_META_PIXEL_ID` to enable the consent-gated Meta Pixel integration.
+- Meta `PageView` events are sent after marketing consent, and email/phone actions send the standard `Contact` event.
+- Search engine sitemaps are available at `/sitemap.xml`; crawler rules are available at `/robots.txt`.
+
+Copy `.env.example` to `.env.local` and fill in the values needed for the current environment.
+
 ## Getting Started
 
 First, run the development server:

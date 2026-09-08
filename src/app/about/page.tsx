@@ -4,7 +4,7 @@ import { DynamicIcon } from "@/components/admin/IconPicker";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_URL } from "@/lib/site";
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 
 export const metadata: Metadata = {
   title: "회사 소개",
@@ -43,7 +43,7 @@ const defaultValues: Record<string, string> = {
 };
 
 async function getAboutSettings() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from('site_settings')
     .select('key, value')
     .like('key', 'about_%');

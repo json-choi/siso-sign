@@ -8,7 +8,7 @@ import RichContent from "@/components/RichContent";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_URL } from "@/lib/site";
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 import { toPlainText } from "@/lib/text";
 
 export const revalidate = 0;
@@ -17,7 +17,7 @@ type PageProps = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const { data: portfolio } = await supabase
+  const { data: portfolio } = await contentDb
     .from("portfolios")
     .select("title, description, category, image_url")
     .eq("id", id)
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getPortfolio(id: string) {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from('portfolios')
     .select('*')
     .eq('id', id)
@@ -63,7 +63,7 @@ async function getPortfolio(id: string) {
 }
 
 async function getRelatedPortfolios(currentId: string, category: string | null) {
-  let query = supabase
+  let query = contentDb
     .from('portfolios')
     .select('*')
     .eq('is_published', true)

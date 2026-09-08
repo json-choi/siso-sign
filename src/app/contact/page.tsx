@@ -4,7 +4,7 @@ import TrackedContactLink from '@/components/analytics/TrackedContactLink';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { SITE_URL } from '@/lib/site';
-import { supabase } from '@/lib/supabase';
+import { contentDb } from '@/lib/database';
 
 export const metadata: Metadata = {
   title: '프로젝트 문의',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export const revalidate = 0;
 
 async function getContactSettings() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from('site_settings')
     .select('key, value')
     .in('key', ['business_name', 'business_address', 'business_phone', 'business_email']);

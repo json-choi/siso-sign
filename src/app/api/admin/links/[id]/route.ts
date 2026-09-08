@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   const body = await request.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('social_links')
     .update(body)
     .eq('id', id)
@@ -24,9 +24,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 export async function DELETE(_request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
 
-  const { error } = await supabase
+  const { error } = await contentDb
     .from('social_links')
     .delete()
     .eq('id', id);

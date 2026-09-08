@@ -4,7 +4,7 @@ import Link from "next/link";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_URL } from "@/lib/site";
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 import { toPlainText } from "@/lib/text";
 
 export const metadata: Metadata = {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const revalidate = 0;
 
 async function getPortfolios() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from('portfolios')
     .select('*')
     .eq('is_published', true)

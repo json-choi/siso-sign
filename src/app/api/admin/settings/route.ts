@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 
 export async function GET() {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('site_settings')
     .select('*')
     .order('key', { ascending: true });
@@ -17,11 +17,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   const body = await request.json();
   const settings = Array.isArray(body) ? body : [body];
   
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('site_settings')
     .upsert(settings, { onConflict: 'key' })
     .select();
@@ -34,18 +34,18 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   const body = await request.json();
   const { key, value } = body;
 
-  const { data: existing } = await supabase
+  const { data: existing } = await contentDb
     .from('site_settings')
     .select('id')
     .eq('key', key)
     .single();
 
   if (!existing) {
-    const { data, error } = await supabase
+    const { data, error } = await contentDb
       .from('site_settings')
       .insert({ key, value, type: 'text', description: key })
       .select()
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(data);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('site_settings')
     .update({ value })
     .eq('key', key)

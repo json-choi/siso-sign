@@ -1,40 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
+import { env } from 'cloudflare:workers';
+import { isAuthenticated } from '@/lib/auth';
 
-// 서명된 업로드 URL 발급 (클라이언트가 Supabase에 직접 업로드하기 위해 사용)
 export async function POST(request: NextRequest) {
+  if (!(await isAuthenticated())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const { filePath } = await request.json();
-
-    if (!filePath || typeof filePath !== 'string') {
-      return NextResponse.json({ error: '유효하지 않은 파일 경로입니다.' }, { status: 400 });
+    const data = await request.formData();
+    const file = data.get('file');
+    if (!(file instanceof File) || !['image/webp','image/png','image/jpeg','image/gif','image/avif'].includes(file.type)) {
+      return NextResponse.json({ error: '지원하는 이미지 파일을 선택해주세요.' }, { status: 400 });
     }
-
-    const supabase = createAdminClient();
-
-    const { data, error } = await supabase.storage
-      .from('images')
-      .createSignedUploadUrl(filePath);
-
-    if (error) {
-      console.error('Signed URL error:', error);
-      return NextResponse.json(
-        { error: '서명된 URL 생성에 실패했습니다: ' + error.message },
-        { status: 500 }
-      );
-    }
-
-    const { data: urlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath);
-
-    return NextResponse.json({
-      signedUrl: data.signedUrl,
-      token: data.token,
-      publicUrl: urlData.publicUrl,
-    });
-  } catch (error) {
-    console.error('Upload sign error:', error);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    if (!file.size || file.size > 10 * 1024 * 1024) return NextResponse.json({ error: '압축된 이미지 크기는 10MB 이하여야 합니다.' }, { status: 413 });
+    const extension = file.type.split('/')[1];
+    const key = `portfolios/${crypto.randomUUID()}.${extension}`;
+    await env.MEDIA.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type } });
+    return NextResponse.json({ publicUrl: `/media/${key}` });
+  } catch {
+    return NextResponse.json({ error: '이미지 업로드에 실패했습니다.' }, { status: 500 });
   }
 }

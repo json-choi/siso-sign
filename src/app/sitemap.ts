@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 import { SITE_URL } from "@/lib/site";
 
 const staticRoutes: MetadataRoute.Sitemap = [
@@ -31,7 +31,7 @@ const staticRoutes: MetadataRoute.Sitemap = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { data: portfolios } = await supabase
+  const { data: portfolios } = await contentDb
     .from("portfolios")
     .select("id, updated_at")
     .eq("is_published", true);

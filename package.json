@@ -3,18 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "vinext dev",
+    "build": "vinext build",
+    "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "eslint",
     "dev:vinext": "vinext dev --port 3001",
     "build:vinext": "vinext build",
     "start:vinext": "wrangler dev --config dist/server/wrangler.json",
-    "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
+    "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json",
+    "test:d1": "tsx scripts/test-d1.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.91.1",
     "@tiptap/extension-color": "^3.17.0",
     "@tiptap/extension-font-family": "^3.17.0",
     "@tiptap/extension-highlight": "^3.17.0",
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.54.5",
+    "@cloudflare/workers-types": "^5.20260908.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
@@ -46,6 +47,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.4",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vite": "^8.2.2",
     "wrangler": "^4.129.1"

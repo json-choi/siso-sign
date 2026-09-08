@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 
 const SECRET_KEY = new TextEncoder().encode(
   process.env.SUPABASE_JWT_SECRET || 'fallback-secret-key-change-in-production'
@@ -53,9 +53,9 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export async function validatePassword(password: string): Promise<boolean> {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   
-  const { data: dbPassword } = await supabase
+  const { data: dbPassword } = await contentDb
     .from('admin_password')
     .select('password_hash')
     .single();

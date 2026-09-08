@@ -1,7 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 
 async function getSettings() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from("site_settings")
     .select("key, value")
     .in("key", [
@@ -23,7 +23,7 @@ async function getSettings() {
 }
 
 async function getSocialLinks() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from("social_links")
     .select("platform, url")
     .eq("is_active", true)

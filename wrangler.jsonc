@@ -27,5 +27,19 @@
       "id": "74a841d53fcc4aa59e40ce0b35fd5414"
     }
   ],
-  "account_id": "0af3820c996f277b2f17ee446d03f60a"
+  "account_id": "0af3820c996f277b2f17ee446d03f60a",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "siso-sign-migration-20260908",
+      "database_id": "29085135-cbc5-440a-acc1-446b4205a9cc",
+      "migrations_dir": "d1-migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "siso-sign-images"
+    }
+  ]
 }

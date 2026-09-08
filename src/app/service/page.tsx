@@ -4,7 +4,7 @@ import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import RichContent from '@/components/RichContent';
 import { SITE_URL } from '@/lib/site';
-import { supabase } from '@/lib/supabase';
+import { contentDb } from '@/lib/database';
 import type { Service } from '@/types/database';
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 async function getServices() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from('services')
     .select('*')
     .eq('is_active', true)
@@ -64,7 +64,7 @@ const fallbackServices = [
 ];
 
 export default async function ServicePage() {
-  let services = await getServices();
+  let services: Pick<Service, 'id' | 'title' | 'description' | 'icon'>[] = await getServices();
   
   if (!services || services.length === 0) {
     services = fallbackServices;
@@ -82,7 +82,7 @@ export default async function ServicePage() {
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service: Service | typeof fallbackServices[number]) => {
+          {services.map((service) => {
             const IconComponent = service.icon && iconMap[service.icon] 
               ? iconMap[service.icon] 
               : Box;

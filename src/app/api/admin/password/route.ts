@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 import { hashPassword, verifyPasswordHash } from '@/lib/auth';
 
 export async function PUT(request: NextRequest) {
@@ -20,9 +20,9 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createAdminClient();
+    const contentDb = createAdminDb();
 
-    const { data: existingPassword } = await supabase
+    const { data: existingPassword } = await contentDb
       .from('admin_password')
       .select('id, password_hash')
       .single();
@@ -46,12 +46,12 @@ export async function PUT(request: NextRequest) {
     const newPasswordHash = await hashPassword(newPassword);
 
     if (existingPassword?.id) {
-      await supabase
+      await contentDb
         .from('admin_password')
         .update({ password_hash: newPasswordHash })
         .eq('id', existingPassword.id);
     } else {
-      const { error } = await supabase
+      const { error } = await contentDb
         .from('admin_password')
         .insert({ password_hash: newPasswordHash });
 

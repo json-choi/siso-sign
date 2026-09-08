@@ -4,13 +4,13 @@ import { ArrowRight } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
-import { supabase } from "@/lib/supabase";
+import { contentDb } from "@/lib/database";
 import { toPlainText } from "@/lib/text";
 
 export const revalidate = 0;
 
 async function getBusinessSettings() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from("site_settings")
     .select("key, value")
     .in("key", [
@@ -28,7 +28,7 @@ async function getBusinessSettings() {
 }
 
 async function getSocialLinks() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from("social_links")
     .select("url")
     .eq("is_active", true)
@@ -70,7 +70,7 @@ function buildJsonLd(settings: Record<string, string>, socialLinks: string[]) {
 }
 
 async function getPortfolios() {
-  const { data } = await supabase
+  const { data } = await contentDb
     .from("portfolios")
     .select("*")
     .eq("is_published", true)

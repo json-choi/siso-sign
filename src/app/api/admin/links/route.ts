@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 
 export async function GET() {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('social_links')
     .select('*')
     .order('sort_order', { ascending: true });
@@ -17,10 +17,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   const body = await request.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await contentDb
     .from('social_links')
     .insert(body)
     .select()

@@ -1,15 +1,15 @@
-import { createAdminClient } from '@/lib/supabase';
+import { createAdminDb } from '@/lib/database';
 import { Images, Briefcase, Settings, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
 async function getStats() {
-  const supabase = createAdminClient();
+  const contentDb = createAdminDb();
   
   const [portfolios, services, settings, links] = await Promise.all([
-    supabase.from('portfolios').select('id', { count: 'exact' }),
-    supabase.from('services').select('id', { count: 'exact' }),
-    supabase.from('site_settings').select('id', { count: 'exact' }),
-    supabase.from('social_links').select('id', { count: 'exact' }),
+    contentDb.from('portfolios').select('id', { count: 'exact' }),
+    contentDb.from('services').select('id', { count: 'exact' }),
+    contentDb.from('site_settings').select('id', { count: 'exact' }),
+    contentDb.from('social_links').select('id', { count: 'exact' }),
   ]);
 
   return {

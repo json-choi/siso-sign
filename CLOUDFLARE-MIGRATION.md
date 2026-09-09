@@ -1,13 +1,35 @@
 # Cloudflare migration
 
-Target: Workers + D1 + R2. The application no longer calls Supabase. The existing JWT signing/salt value remains under its original environment variable name so existing sessions and password hashes retain compatibility.
+Production DNS was switched to Cloudflare on 2026-09-09. Both `siso-sign.com`
+and `www.siso-sign.com` route to the `siso-sign` Worker. The apex permanently
+redirects to HTTPS `www`, preserving paths and query strings.
 
-A separate D1 replica contains all 32 application rows in five tables. Supabase Auth had no users. All 74 source storage objects (220,228,167 bytes) were backed up, copied to the dedicated R2 bucket, downloaded again, and SHA-256 verified. Fifteen image URL fields were rewritten in the replica to `/media/` routes. Source database timestamps and IDs were preserved. Original Supabase data remains unchanged.
+The application runs on Workers with D1, R2, KV, and Images. It no longer calls
+Supabase. `SUPABASE_JWT_SECRET` retains its original name and value to preserve
+existing admin sessions and password hashes; `ADMIN_PASSWORD` also remains a
+Worker secret.
 
-Validation: PostgreSQL dump restored and every application field compared; local SQLite and remote D1 full-row/foreign-key validation; TypeScript and Workers build; D1 integration checks for CRUD, visibility, private tables, identifier validation, arrays/booleans and atomic bulk rollback. Remote preview passed password login, 20 settings reads, service create/update/delete and exact image upload/download. Test objects and rows were removed.
+At cutover, all 32 application rows in five tables matched the source field by
+field after rewriting image URLs to `/media/`. All 74 source images
+(220,228,167 bytes) matched their retained backups by object metadata. Every R2
+object was downloaded and its SHA-256 matched the source backup. The Vercel
+admin API was frozen before the final comparison to prevent application writes
+during cutover. Source snapshots and original DNS settings are backed up
+privately outside the repository.
 
-`pnpm build` builds Workers. `pnpm test:d1` uses an isolated local D1. Runtime bindings are `DB` and `MEDIA`; the application data client applies public visibility filters and admin routes require authentication. Image uploads use the authenticated application endpoint, with compressed images limited to 10 MB.
+The previous Workers deployment returned 404 for bundled CSS and JavaScript
+because `run_worker_first` bypassed automatic asset serving. `worker.js` now
+forwards `/_next/static/` to `ASSETS` before the application handler. Three
+regression tests cover asset routing, protected application routes, and the apex
+redirect. TypeScript, isolated D1 integration tests, and the Workers build pass.
 
-Production cutover has NOT happened. Before cutover: pause source writes, create a fresh consistent source snapshot and final D1/R2 copy, compare all fields and objects, bind the final database, validate authentication and DNS/TLS, then switch the production hostname. Keep Vercel and Supabase for rollback. Reverting DNS alone will not copy later D1 writes back to PostgreSQL; the reverse synchronization and upload-capable fallback must be tested before production.
+Pushing `main` runs `.github/workflows/cloudflare.yml` and deploys to Cloudflare
+using the existing `cloudflare-production` environment. Vercel's Git integration
+has been disconnected so Cloudflare-only code is not deployed there.
 
-The manual GitHub deployment workflow needs a personal-account API token. Do not merge to main while Vercel automatic deployment still targets this branch's Cloudflare-only runtime.
+Vercel remains a temporary fallback for resolvers that still cache the old DNS.
+Its admin API stays blocked to avoid writes to the old database. Remove the old
+Vercel project only after cached Vercel DNS responses have expired. Original
+Supabase data and storage remain preserved as migration backups; they are not
+used by the Cloudflare application. Switching DNS back alone would not copy
+subsequent D1 or R2 writes back to Supabase.

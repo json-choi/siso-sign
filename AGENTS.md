@@ -2,12 +2,12 @@
 
 ## Project Overview
 
-siso-sign is a brand homepage for a signage design agency built with Next.js 16, React 19, and Supabase.
+siso-sign is a brand homepage for a signage design agency built with Next.js 16, React 19, and Cloudflare Workers.
 
 **Tech Stack:**
-- Framework: Next.js 16.1 (App Router, Turbopack)
+- Framework: Next.js 16 App Router, vinext (Vite)
 - UI: React 19, Tailwind CSS 4, Framer Motion
-- Backend: Supabase (PostgreSQL, Auth, Storage)
+- Backend: Cloudflare Workers, D1, R2, KV, Images
 - Language: TypeScript 5 (strict mode)
 - Icons: Lucide React
 - Package Manager: pnpm
@@ -46,14 +46,14 @@ git push origin main
 ```
 
 ### 3. Automatic Deployment
-Pushing to the `main` branch automatically deploys the project to Vercel.
+Pushing to the `main` branch runs `.github/workflows/cloudflare.yml` and deploys to Cloudflare Workers after TypeScript, D1 integration tests, and the Workers build pass.
 - **Live Domain:** [www.siso-sign.com](https://www.siso-sign.com)
 
 ---
 
 ## Build / Lint / Test Commands
 
-**No test framework configured yet.** If tests are added, use Vitest or Jest.
+Run `pnpm exec tsc --noEmit`, `pnpm test:d1`, and `pnpm build` before deploying. D1 tests use an isolated local database.
 
 ---
 

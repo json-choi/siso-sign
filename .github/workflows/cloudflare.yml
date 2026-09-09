@@ -2,7 +2,7 @@ name: Cloudflare deployment
 on:
   workflow_dispatch:
   push:
-    branches: [cloudflare-migration]
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -24,6 +24,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec tsc --noEmit
       - run: pnpm test:d1
+      - run: pnpm test:worker
       - run: pnpm build:vinext
         env:
           NEXT_PUBLIC_META_PIXEL_ID: ${{ vars.NEXT_PUBLIC_META_PIXEL_ID }}

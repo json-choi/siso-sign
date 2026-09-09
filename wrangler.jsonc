@@ -1,6 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "siso-sign",
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "siso-sign.com/*", "zone_id": "0bb6ec3c2717964f92b76261cf7cddc6" },
+    { "pattern": "www.siso-sign.com/*", "zone_id": "0bb6ec3c2717964f92b76261cf7cddc6" }
+  ],
   "compatibility_date": "2026-09-08",
   "compatibility_flags": [
     "nodejs_compat"

@@ -79,6 +79,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
             src={value}
             alt="업로드된 이미지"
             fill
+            unoptimized={value.startsWith('/media/')}
             className="object-cover"
           />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">

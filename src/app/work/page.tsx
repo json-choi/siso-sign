@@ -71,6 +71,7 @@ export default async function WorkPage() {
                     src={project.image_url}
                     alt={project.title}
                     fill
+                    unoptimized={project.image_url.startsWith('/media/')}
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (

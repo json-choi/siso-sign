@@ -97,6 +97,7 @@ export default function PortfoliosPage() {
                         src={item.image_url}
                         alt={item.title}
                         fill
+                        unoptimized={item.image_url.startsWith('/media/')}
                         className="object-cover"
                       />
                     </div>
@@ -161,6 +162,7 @@ export default function PortfoliosPage() {
                     src={item.image_url}
                     alt={item.title}
                     fill
+                    unoptimized={item.image_url.startsWith('/media/')}
                     className="object-cover"
                   />
                 </div>

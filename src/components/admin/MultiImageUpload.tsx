@@ -142,6 +142,7 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
                 src={url}
                 alt={`이미지 ${index + 1}`}
                 fill
+                unoptimized={url.startsWith('/media/')}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

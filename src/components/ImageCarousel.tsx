@@ -31,6 +31,7 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
           src={validImages[0]}
           alt={alt}
           fill
+          unoptimized={validImages[0].startsWith('/media/')}
           className="object-cover"
           priority
         />
@@ -86,6 +87,7 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
               src={validImages[currentIndex]}
               alt={`${alt} - ${currentIndex + 1}`}
               fill
+              unoptimized={validImages[currentIndex].startsWith('/media/')}
               className="object-cover"
               priority
             />

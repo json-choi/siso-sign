@@ -156,6 +156,7 @@ export default async function ProjectPage({ params }: PageProps) {
                         src={item.image_url}
                         alt={item.title}
                         fill
+                        unoptimized={item.image_url.startsWith('/media/')}
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (

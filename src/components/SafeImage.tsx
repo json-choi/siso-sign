@@ -39,6 +39,7 @@ export default function SafeImage({
       <Image
         src={src}
         alt={alt}
+        unoptimized={typeof src === 'string' && src.startsWith('/media/')}
         className={className}
         onError={() => setHasError(true)}
         onLoad={() => setIsLoading(false)}

@@ -113,6 +113,7 @@ export default function ImageUploadField({
             src={value}
             alt="미리보기"
             fill
+            unoptimized={value.startsWith('/media/')}
             className="object-contain"
           />
         </div>

@@ -82,6 +82,7 @@ export default async function AboutPage() {
                 src={settings.about_image_url}
                 alt="About siso-sign"
                 fill
+                unoptimized={settings.about_image_url.startsWith('/media/')}
                 className="object-cover"
               />
             </div>

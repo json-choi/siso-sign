@@ -14,7 +14,7 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  const validImages = images?.filter(img => img && img.startsWith('http')) || [];
+  const validImages = images?.filter(img => img && (img.startsWith('/media/') || img.startsWith('http'))) || [];
 
   if (validImages.length === 0) {
     return (

@@ -151,7 +151,7 @@ export default async function ProjectPage({ params }: PageProps) {
                     href={`/work/${item.id}`}
                     className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
                   >
-                    {item.image_url && item.image_url.startsWith('http') ? (
+                    {item.image_url && (item.image_url.startsWith('/media/') || item.image_url.startsWith('http')) ? (
                       <Image
                         src={item.image_url}
                         alt={item.title}

@@ -107,7 +107,7 @@ export default function ImageUploadField({
         <p className="text-sm text-red-500">{error}</p>
       )}
 
-      {value && value.startsWith('http') && (
+      {value && (value.startsWith('/media/') || value.startsWith('http')) && (
         <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-white/5 mt-2">
           <Image
             src={value}

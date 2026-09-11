@@ -192,7 +192,7 @@ export default async function Home() {
                   href={`/work/${project.id}`}
                   className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5"
                 >
-                  {project.image_url && project.image_url.startsWith('http') ? (
+                  {project.image_url && (project.image_url.startsWith('/media/') || project.image_url.startsWith('http')) ? (
                     <Image
                       src={project.image_url}
                       alt={project.title}

@@ -76,7 +76,7 @@ export default async function AboutPage() {
             <p>{settings.about_description_1}</p>
             <p>{settings.about_description_2}</p>
           </div>
-          {settings.about_image_url && settings.about_image_url.startsWith('http') ? (
+          {settings.about_image_url && (settings.about_image_url.startsWith('/media/') || settings.about_image_url.startsWith('http')) ? (
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
               <Image
                 src={settings.about_image_url}

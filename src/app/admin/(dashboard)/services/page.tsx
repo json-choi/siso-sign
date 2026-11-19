@@ -114,7 +114,7 @@ export default function ServicesPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="서비스"
-        description="서비스 페이지에 보이는 항목입니다. 왼쪽 손잡이를 끌어 순서를 바꾸세요."
+        description="서비스 페이지에 보이는 항목입니다. 항목을 잡고 끌어 순서를 바꾸세요."
         actions={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 서비스</Button>}
       />
 

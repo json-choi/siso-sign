@@ -110,7 +110,7 @@ export default function LinksPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="소셜 링크"
-        description="사이트 하단과 홈 화면에 보이는 링크입니다. 손잡이를 끌어 순서를 바꾸세요."
+        description="사이트 하단과 홈 화면에 보이는 링크입니다. 항목을 잡고 끌어 순서를 바꾸세요."
         actions={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 링크</Button>}
       />
 

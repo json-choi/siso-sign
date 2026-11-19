@@ -47,20 +47,24 @@ export default function SortableList<T extends { id: string }>({ items, onReorde
 
 function SortableRow({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+  // Pointer drags start anywhere on the row; keyboard drags only from the handle.
+  const { onKeyDown, ...pointerListeners } = listeners ?? {};
 
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
+      {...pointerListeners}
+      onDragStart={(event) => event.preventDefault()}
       className={cn(
-        'flex items-stretch gap-1 rounded-xl border border-white/[0.07] bg-[#141414] p-2',
+        'flex cursor-grab items-stretch gap-1 rounded-xl border border-white/[0.07] bg-[#141414] p-2 select-none [-webkit-touch-callout:none] active:cursor-grabbing',
         isDragging && 'relative z-10 border-primary/40 shadow-2xl shadow-black/60',
       )}
     >
       <button
         ref={setActivatorNodeRef}
         {...attributes}
-        {...listeners}
+        onKeyDown={(event) => onKeyDown?.(event)}
         className="flex w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-gray-600 hover:bg-white/5 hover:text-gray-300 active:cursor-grabbing"
         aria-label={`${label} 순서 이동`}
       >

@@ -255,7 +255,7 @@ export default function PortfoliosPage() {
         title="포트폴리오"
         description={
           <>
-            프로젝트 {total}개 · 카드를 끌어서 <span className="text-gray-300">분류와 순서</span>를 바꿀 수 있습니다.
+            프로젝트 {total}개 · 카드를 잡고 끌어서 <span className="text-gray-300">분류와 순서</span>를 바꿀 수 있습니다.
             {saving && <span className="ml-2 text-gray-500">저장 중…</span>}
           </>
         }
@@ -424,12 +424,22 @@ interface SortableCardProps {
 
 function SortableCard({ item, disabled, onMenu, onToggle }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: item.id, disabled });
+  // Mouse and touch can grab anywhere on the card (a click or tap still reaches the
+  // links and buttons inside). Keyboard dragging stays on the handle so Enter and
+  // Space on the inner buttons keep their usual meaning.
+  const { onKeyDown, ...pointerListeners } = listeners ?? {};
 
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn(isDragging && 'opacity-30')}
+      {...(disabled ? {} : pointerListeners)}
+      onDragStart={(event) => event.preventDefault()}
+      className={cn(
+        'select-none [-webkit-touch-callout:none]',
+        !disabled && 'cursor-grab active:cursor-grabbing',
+        isDragging && 'opacity-30',
+      )}
     >
       <CardBody
         item={item}
@@ -438,7 +448,7 @@ function SortableCard({ item, disabled, onMenu, onToggle }: SortableCardProps) {
             <button
               ref={setActivatorNodeRef}
               {...attributes}
-              {...listeners}
+              onKeyDown={(event) => onKeyDown?.(event)}
               className="flex h-full w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-gray-600 hover:bg-white/5 hover:text-gray-300 active:cursor-grabbing"
               aria-label={`${item.title} 이동`}
             >
@@ -495,7 +505,7 @@ function CardBody({ item, handle, actions, overlay = false }: CardBodyProps) {
         {overlay ? (
           <p className="truncate font-medium text-white">{item.title}</p>
         ) : (
-          <Link href={`/admin/portfolios/${item.id}/edit`} className="truncate font-medium text-white hover:underline">
+          <Link href={`/admin/portfolios/${item.id}/edit`} draggable={false} className="truncate font-medium text-white hover:underline">
             {item.title}
           </Link>
         )}

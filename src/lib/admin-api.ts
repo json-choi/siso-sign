@@ -13,7 +13,7 @@ export async function adminRequest<T>(url: string, init?: RequestInit & { json?:
   }
 
   if (response.status === 401) {
-    window.location.assign(`/admin?redirect=${encodeURIComponent(window.location.pathname)}`);
+    window.location.assign(`/admin?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     throw new Error('로그인이 만료되었습니다.');
   }
 

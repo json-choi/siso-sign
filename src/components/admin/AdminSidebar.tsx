@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { ExternalLink, LogOut, X } from 'lucide-react';
 import { useSidebar } from '@/components/admin/AdminSidebarContext';
 import { isActive, navGroups } from '@/components/admin/admin-nav';
@@ -10,7 +10,6 @@ import { cn } from '@/lib/cn';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { isOpen, close } = useSidebar();
 
   useEffect(() => {
@@ -24,8 +23,7 @@ export default function AdminSidebar() {
 
   const handleLogout = async () => {
     await fetch('/api/admin/auth', { method: 'DELETE' }).catch(() => null);
-    router.push('/admin');
-    router.refresh();
+    window.location.replace('/admin');
   };
 
   return (

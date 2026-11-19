@@ -2,9 +2,10 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Button, inputClass } from '@/components/admin/ui';
+import { safeAdminRedirect } from '@/lib/admin-redirect';
 import { cn } from '@/lib/cn';
 
 function LoginForm() {
@@ -12,11 +13,8 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [show, setShow] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const requested = searchParams.get('redirect');
-  // Only follow same-site admin paths after login.
-  const redirect = requested?.startsWith('/admin/') && !requested.startsWith('//') ? requested : '/admin/dashboard';
+  const redirect = safeAdminRedirect(searchParams.get('redirect'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +28,20 @@ function LoginForm() {
         body: JSON.stringify({ password }),
       });
 
-      const data = await res.json();
+      const data: { error?: string } = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setError(data.error || '로그인에 실패했습니다.');
+        setIsLoading(false);
         return;
       }
 
-      router.push(redirect);
-      router.refresh();
+      // A full page load makes the next request carry the new session cookie,
+      // rather than racing a client-side navigation against it. The button
+      // stays in its loading state until the new page replaces this one.
+      window.location.replace(redirect);
     } catch {
-      setError('서버 오류가 발생했습니다.');
-    } finally {
+      setError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.');
       setIsLoading(false);
     }
   };

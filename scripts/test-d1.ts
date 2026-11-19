@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { getPlatformProxy } from 'wrangler';
 import type { D1Database } from '@cloudflare/workers-types';
 import { databaseClient, ensureSchema } from '../src/lib/database-core';
-import { deviceOf, isBot, kstDay, recordVisit, sourceOf, summarize } from '../src/lib/analytics';
+import { deviceOf, isBot, isBotRequest, kstDay, recordVisit, sourceOf, summarize } from '../src/lib/analytics';
 
 const directory = await mkdtemp(join(tmpdir(), 'siso-d1-test-'));
 const configPath = join(directory, 'wrangler.json');
@@ -99,6 +99,22 @@ try {
   assert.equal(kstDay(Date.UTC(2026, 10, 18, 15, 30)), '2026-11-19'); // 00:30 KST belongs to the next day
   assert.equal(sourceOf(new URL('https://www.siso-sign.com/'), 'https://m.search.naver.com/x'), 'naver');
   assert.ok(isBot('facebookexternalhit/1.1') && isBot('') && !isBot(iphone));
+  for (const crawler of [
+    'Mozilla/5.0 (compatible; Yeti/1.1; +https://naver.me/spd)',
+    'Mozilla/5.0 (compatible; Daum/4.1; +http://cs.daum.net/faq/15/4118.html?faqId=28966)',
+    'Mozilla/5.0 (compatible; MSIE or Firefox mutant; not on Windows server;) Daumoa 4.0',
+    'Mozilla/5.0 (compatible; kakaotalk-scrap/1.0; +https://devtalk.kakao.com/t/scrap/33984)',
+    'WhatsApp/2.23.20.0', 'Go-http-client/1.1', 'node-fetch/1.0', 'axios/1.6.0', 'okhttp/4.9.0',
+  ]) assert.ok(isBot(crawler), crawler);
+  const chrome = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+  for (const person of [chrome, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.4.5', 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 DaumApps/6.9.0'])
+    assert.ok(!isBot(person), person);
+  const browserRequest = (headers: Record<string, string>) => new Request('https://www.siso-sign.com/', { headers: { 'user-agent': chrome, ...headers } });
+  assert.ok(!isBotRequest(browserRequest({ 'accept-language': 'ko-KR,ko;q=0.9' })));
+  assert.ok(isBotRequest(browserRequest({})), 'a Chrome user agent without Accept-Language is a crawler');
+  const verified = browserRequest({ 'accept-language': 'en-US' });
+  Object.defineProperty(verified, 'cf', { value: { verifiedBotCategory: 'Search Engine Crawler' } });
+  assert.ok(isBotRequest(verified), 'Cloudflare verified bots are skipped');
   assert.equal(deviceOf('Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)'), 'tablet');
   console.log('D1 integration passed: CRUD, visibility, private tables, identifier validation, atomic bulk rollback, stable IDs, arrays/booleans, project type schema and placement, reordering, visit analytics.');
 } finally { await platform.dispose(); await rm(directory, { recursive: true, force: true }); }

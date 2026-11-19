@@ -1,4 +1,4 @@
-import { recordVisit, isBot } from '@/lib/analytics';
+import { isBotRequest, recordVisit } from '@/lib/analytics';
 import type { D1Database } from '@cloudflare/workers-types';
 
 interface TrackingEnv {
@@ -22,8 +22,8 @@ export async function trackPageView(request: Request, response: Response, env: T
   const isRsc = request.headers.get('rsc') === '1' || url.searchParams.has('_rsc');
   const isHtml = (response.headers.get('content-type') ?? '').includes('text/html');
   if (!isRsc && !isHtml) return;
+  if (isBotRequest(request)) return;
   const userAgent = request.headers.get('user-agent') ?? '';
-  if (isBot(userAgent)) return;
 
   await recordVisit(env.DB, {
     kind: 'view',

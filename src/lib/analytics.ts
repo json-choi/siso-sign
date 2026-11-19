@@ -40,10 +40,30 @@ export function kstDay(ms: number): string {
   return new Date(ms + KST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
-const BOT = /bot|crawl|spider|slurp|facebookexternalhit|meta-externalagent|preview|monitor|curl|wget|python|headless|lighthouse|pingdom|uptime|scan/i;
+const BOT = new RegExp([
+  'bot|crawl|spider|slurp|scrap|fetch|preview|monitor|scan|lighthouse|pingdom|uptime|headless',
+  // Korean search and link-preview crawlers that do not say "bot".
+  'yeti|daumoa|daum\\/|kakaotalk-scrap',
+  'facebookexternalhit|meta-externalagent|whatsapp|embedly|iframely',
+  // Scripts and HTTP libraries.
+  'curl|wget|python|go-http-client|node|axios|okhttp|java/|libwww|httpclient|ruby|php|perl|postman|insomnia',
+].join('|'), 'i');
 
+/** True when the user agent belongs to a crawler, link previewer or script rather than a browser. */
 export function isBot(userAgent: string): boolean {
-  return !userAgent || BOT.test(userAgent);
+  return !userAgent || !/^Mozilla\//.test(userAgent) || BOT.test(userAgent);
+}
+
+/**
+ * Bot check for an incoming request: the user agent, Cloudflare's verified-bot
+ * label, and the Accept-Language header every real browser sends (crawlers
+ * posing as Chrome usually leave it out).
+ */
+export function isBotRequest(request: Request): boolean {
+  const cf = (request as Request & { cf?: { verifiedBotCategory?: string } }).cf;
+  return isBot(request.headers.get('user-agent') ?? '')
+    || Boolean(cf?.verifiedBotCategory)
+    || !request.headers.get('accept-language');
 }
 
 export function deviceOf(userAgent: string): 'mobile' | 'tablet' | 'desktop' {

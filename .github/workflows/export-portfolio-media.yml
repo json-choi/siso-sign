@@ -1,5 +1,5 @@
 name: Export portfolio media
-# Collects published portfolio photos from the live site (public
+# Run manually from the Actions tab. Collects published portfolio photos from the live site (public
 # pages only, no secrets) and attaches them to the run for one day, for making
 # marketing material outside the site.
 on:
@@ -14,7 +14,17 @@ on:
 permissions:
   contents: write
 jobs:
+  # A push that edits this file only removes the temporary ref left by an export.
+  cleanup:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Delete refs/tmp/portfolio-media
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" :refs/tmp/portfolio-media || true
   export:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/setup-node@v4

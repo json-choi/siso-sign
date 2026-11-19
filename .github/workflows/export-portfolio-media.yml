@@ -1,0 +1,68 @@
+name: Export portfolio media
+# Manual only. Collects published portfolio photos from the live site (public
+# pages only, no secrets) and attaches them to the run for one day, for making
+# marketing material outside the site.
+on:
+  workflow_dispatch:
+    inputs:
+      width:
+        description: Width to download (a size the media route serves)
+        default: "1920"
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download published portfolio photos
+        env:
+          WIDTH: ${{ inputs.width }}
+        run: |
+          mkdir -p media
+          cat > export.mjs <<'EOF'
+          import { writeFile } from 'node:fs/promises';
+          const site = 'https://www.siso-sign.com';
+          const width = process.env.WIDTH || '1920';
+          const page = async (path) => {
+            const response = await fetch(site + path);
+            if (!response.ok) throw new Error(`${path}: ${response.status}`);
+            return response.text();
+          };
+          const unique = (items) => [...new Set(items)];
+          const decode = (text) => text.replace(/&amp;/g, '&').replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          const work = await page('/work');
+          const ids = unique([...work.matchAll(/\/work\/([0-9a-f-]{36})/g)].map((m) => m[1]));
+          const manifest = [];
+          for (const [index, id] of ids.entries()) {
+            const html = await page(`/work/${id}`);
+            const title = decode(html.match(/<h1[^>]*>([^<]+)<\/h1>/)?.[1]?.trim() ?? id);
+            // The carousel's image list is in the page's RSC payload; fall back to the
+            // markup above "Related Work" so other projects' photos are not included.
+            const flat = html.replace(/\\"/g, '"');
+            const list = flat.match(/"images":\[([^\]]*)\]/)?.[1] ?? html.split('Related Work')[0];
+            const sources = unique([...list.matchAll(/\/media\/portfolios\/[A-Za-z0-9._-]+/g)].map((m) => m[0]));
+            const files = [];
+            for (const [n, source] of sources.entries()) {
+              const response = await fetch(`${site}${source}?w=${width}`, { headers: { accept: 'image/webp,image/*' } });
+              if (!response.ok) { console.log(`skip ${source}: ${response.status}`); continue; }
+              const type = response.headers.get('content-type') ?? '';
+              const extension = type.includes('webp') ? 'webp' : type.includes('png') ? 'png' : 'jpg';
+              const name = `${String(index + 1).padStart(2, '0')}-${n + 1}.${extension}`;
+              await writeFile(`media/${name}`, Buffer.from(await response.arrayBuffer()));
+              files.push({ name, source });
+            }
+            manifest.push({ id, title, files });
+            console.log(`${title}: ${files.length} photos`);
+          }
+          await writeFile('media/manifest.json', JSON.stringify(manifest, null, 2));
+          EOF
+          node export.mjs
+          du -sh media
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-media
+          path: media
+          retention-days: 1

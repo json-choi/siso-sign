@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<!-- Instagram carousel, 7 slides at 1080x1350. Open ad.html#1 … #7 to view one slide; render.mjs writes output/*.jpg. Photos come from `npm run fetch-media`. -->
+<style>
+@font-face { font-family: Pretendard; font-weight: 400; src: url(../node_modules/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2); }
+@font-face { font-family: Pretendard; font-weight: 500; src: url(../node_modules/pretendard/dist/web/static/woff2/Pretendard-Medium.woff2); }
+@font-face { font-family: Pretendard; font-weight: 700; src: url(../node_modules/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2); }
+@font-face { font-family: Pretendard; font-weight: 800; src: url(../node_modules/pretendard/dist/web/static/woff2/Pretendard-ExtraBold.woff2); }
+@font-face { font-family: Geist; font-weight: 400; src: url(../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2); }
+@font-face { font-family: Geist; font-weight: 500; src: url(../node_modules/geist/dist/fonts/geist-sans/Geist-Medium.woff2); }
+@font-face { font-family: Geist; font-weight: 600; src: url(../node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.woff2); }
+@font-face { font-family: CalSans; src: url(CalSans-Regular.woff2); }
+
+:root {
+  --ink: #0a0a0a;
+  --paper: #f4f1ee;
+  --brand: #a40035;
+  --brand-glow: #e0336b;
+  --muted: rgba(255,255,255,.62);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1350px; background: var(--ink); overflow: hidden; }
+body { font-family: Pretendard, Geist, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+.slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; display: none; }
+.slide.on { display: block; }
+.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,10,.55) 0%, rgba(10,10,10,0) 18%, rgba(10,10,10,0) 52%, rgba(10,10,10,.92) 100%); }
+.top { position: absolute; top: 56px; left: 64px; right: 64px; display: flex; justify-content: space-between; align-items: center; }
+.mark { font-family: CalSans, Geist, sans-serif; font-size: 40px; letter-spacing: -.5px; color: #fff; }
+.mark i { font-style: normal; color: var(--brand-glow); }
+.count { font-family: Geist; font-weight: 500; font-size: 24px; letter-spacing: 2px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bottom { position: absolute; left: 64px; right: 64px; bottom: 72px; }
+.eyebrow { font-family: Geist; font-weight: 500; font-size: 22px; letter-spacing: 5px; text-transform: uppercase; color: var(--brand-glow); }
+.name { font-family: Geist; font-weight: 600; font-size: 76px; letter-spacing: -2.5px; line-height: 1; margin-top: 18px; }
+.desc { font-size: 30px; font-weight: 500; color: var(--muted); margin-top: 18px; letter-spacing: -.3px; }
+.rule { width: 72px; height: 4px; background: var(--brand-glow); margin-bottom: 30px; border-radius: 2px; }
+
+/* 1. Hook */
+.hook .shade { background: linear-gradient(180deg, rgba(10,10,10,.5) 0%, rgba(10,10,10,0) 22%, rgba(10,10,10,.1) 45%, rgba(10,10,10,.94) 82%); }
+.headline { font-size: 104px; font-weight: 800; line-height: 1.12; letter-spacing: -4px; }
+.headline em { font-style: normal; color: var(--brand-glow); }
+.sub { font-size: 32px; font-weight: 500; color: var(--muted); margin-top: 28px; letter-spacing: -.4px; }
+.swipe { margin-top: 56px; display: inline-flex; align-items: center; gap: 14px; font-family: Geist; font-weight: 500; font-size: 24px; letter-spacing: 3px; color: #fff; text-transform: uppercase; }
+.swipe span { display: inline-block; width: 56px; height: 2px; background: #fff; position: relative; }
+.swipe span::after { content: ""; position: absolute; right: 0; top: -6px; width: 12px; height: 12px; border-top: 2px solid #fff; border-right: 2px solid #fff; transform: rotate(45deg); }
+
+/* 7. CTA */
+.cta { background: var(--paper); color: var(--ink); }
+.cta .mark { color: var(--ink); }
+.cta .count { color: rgba(10,10,10,.45); }
+.grid { position: absolute; top: 150px; left: 64px; right: 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: 6px; display: block; }
+.cta .bottom { bottom: 64px; }
+.cta h2 { font-size: 66px; font-weight: 800; line-height: 1.18; letter-spacing: -2.4px; }
+.cta h2 em { font-style: normal; color: var(--brand); }
+.cta p { font-size: 30px; font-weight: 500; line-height: 1.5; color: rgba(10,10,10,.66); margin-top: 22px; letter-spacing: -.4px; }
+.dm { margin-top: 36px; display: flex; align-items: center; justify-content: space-between; }
+.pill { display: inline-flex; align-items: center; gap: 14px; background: var(--brand); color: #fff; font-size: 32px; font-weight: 700; padding: 24px 40px; border-radius: 999px; letter-spacing: -.4px; }
+.pill svg { width: 30px; height: 30px; }
+.site { font-family: Geist; font-weight: 500; font-size: 26px; color: rgba(10,10,10,.55); letter-spacing: .5px; }
+</style>
+</head>
+<body>
+
+<section class="slide hook" data-n="1">
+  <img class="photo" src="../media/4fd92e71-e453-4781-8052-adc59b71e7d2.webp" style="object-position: 30% 50%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">01 / 07</span></div>
+  <div class="bottom">
+    <h1 class="headline">간판은<br>가게의 <em>첫 문장</em>입니다.</h1>
+    <p class="sub">공간에 맞는 간판을 디자인하고, 직접 만듭니다.</p>
+    <div class="swipe">Our work <span></span></div>
+  </div>
+</section>
+
+<section class="slide" data-n="2">
+  <img class="photo" src="../media/ac7a7238-6e90-49b4-85a7-ba1e7f52b52f.webp" style="object-position: 50% 40%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">02 / 07</span></div>
+  <div class="bottom"><div class="rule"></div><p class="eyebrow">Record bar</p><p class="name">objktt Record Bar</p><p class="desc">오브옉트 레코드바 · 조명 사인</p></div>
+</section>
+
+<section class="slide" data-n="3">
+  <img class="photo" src="../media/1774791730517-8h5kd1z.webp" style="object-position: 50% 45%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">03 / 07</span></div>
+  <div class="bottom"><div class="rule"></div><p class="eyebrow">Restaurant</p><p class="name">you need ramen</p><p class="desc">라멘 전문점 · 입체 간판</p></div>
+</section>
+
+<section class="slide" data-n="4">
+  <img class="photo" src="../media/1768138605147-b3trydt.webp" style="object-position: 55% 50%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">04 / 07</span></div>
+  <div class="bottom"><div class="rule"></div><p class="eyebrow">Retail</p><p class="name">scalartis</p><p class="desc">매장 내부 사인</p></div>
+</section>
+
+<section class="slide" data-n="5">
+  <img class="photo" src="../media/1774577309257-k3f46fh.webp" style="object-position: 50% 50%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">05 / 07</span></div>
+  <div class="bottom"><div class="rule"></div><p class="eyebrow">Academy</p><p class="name">ANIFORCE</p><p class="desc">애니포스만화학원 분당점 · 입구 사인</p></div>
+</section>
+
+<section class="slide" data-n="6">
+  <img class="photo" src="../media/01f596f0-0b67-42b5-bf5d-7e88da1afc2d.webp" style="object-position: 30% 50%" alt="">
+  <div class="shade"></div>
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">06 / 07</span></div>
+  <div class="bottom"><div class="rule"></div><p class="eyebrow">Office</p><p class="name">Next ID</p><p class="desc">후광 입체 사인</p></div>
+</section>
+
+<section class="slide cta" data-n="7">
+  <div class="top"><span class="mark">siso-sign<i>.</i></span><span class="count">07 / 07</span></div>
+  <div class="grid">
+    <img src="../media/1774573305635-rytblrl.webp" style="object-position: 40% 50%" alt="">
+    <img src="../media/1774577523405-v2x8u1g.webp" style="object-position: 50% 50%" alt="">
+    <img src="../media/81465a6c-9f00-497c-b2af-9fe3c5a4bce6.webp" style="object-position: 50% 45%" alt="">
+    <img src="../media/67f74bc4-e5a1-44f5-a61f-83ea5cd73574.webp" style="object-position: 50% 50%" alt="">
+  </div>
+  <div class="bottom">
+    <h2>우리 가게의 <em>첫인상</em>,<br>사진 한 장으로 시작하세요.</h2>
+    <p>현장 사진을 DM으로 보내주시면<br>어울리는 간판을 제안해 드립니다.</p>
+    <div class="dm">
+      <span class="pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        DM으로 상담하기
+      </span>
+      <span class="site">siso-sign.com</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const n = Number(location.hash.slice(1) || 1);
+  document.querySelector(`.slide[data-n="${n}"]`).classList.add('on');
+</script>
+</body>
+</html>

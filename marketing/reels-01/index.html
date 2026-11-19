@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <!--
+      siso-sign Instagram Reels 01 — 17s, 1080x1920, silent (add music in Instagram).
+      0.0–2.6  Hook: 맑은수한약국 sign "lights up", headline
+      2.6–11.1 Five works, 1.7s each, slow push-in with name
+      11.1–13.1 Quick cuts of four more works, "33개의 공간"
+      13.1–17.0 CTA on paper: DM으로 사진 한 장
+      Assets come from `npm run reels:assets` (photos, fonts, GSAP).
+    -->
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: Pretendard; font-weight: 500; src: url(assets/Pretendard-Medium.woff2); }
+      @font-face { font-family: Pretendard; font-weight: 700; src: url(assets/Pretendard-Bold.woff2); }
+      @font-face { font-family: Pretendard; font-weight: 800; src: url(assets/Pretendard-ExtraBold.woff2); }
+      @font-face { font-family: Geist; font-weight: 500; src: url(assets/Geist-Medium.woff2); }
+      @font-face { font-family: Geist; font-weight: 600; src: url(assets/Geist-SemiBold.woff2); }
+      @font-face { font-family: CalSans; src: url(assets/CalSans-Regular.woff2); }
+      :root {
+        --ground: #0a0a0a;
+        --paper: #f4f1ee;
+        --ink: #ffffff;
+        --brand: #a40035;
+        --glow: #e0336b;
+        --muted: rgba(255, 255, 255, 0.66);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ground); }
+      body { font-family: Pretendard, Geist, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; word-break: keep-all; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      .scene img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,10,.55) 0%, rgba(10,10,10,0) 16%, rgba(10,10,10,0) 55%, rgba(10,10,10,.92) 100%); }
+      .dark { position: absolute; inset: 0; background: #000; }
+      .mark { position: absolute; top: 96px; left: 72px; font-family: CalSans, Geist, sans-serif; font-size: 44px; }
+      .mark i { font-style: normal; color: var(--glow); }
+      .caption { position: absolute; left: 72px; right: 72px; bottom: 200px; }
+      .rule { width: 80px; height: 5px; border-radius: 3px; background: var(--glow); margin-bottom: 32px; }
+      .eyebrow { font-family: Geist; font-weight: 500; font-size: 30px; letter-spacing: 6px; text-transform: uppercase; color: rgba(255,255,255,.82); }
+      .name { font-family: Geist; font-weight: 600; font-size: 92px; letter-spacing: -3px; line-height: 1; margin-top: 20px; }
+      .desc { font-size: 34px; font-weight: 500; color: var(--muted); margin-top: 20px; }
+      .headline { font-size: 112px; font-weight: 800; line-height: 1.12; letter-spacing: -5px; }
+      .headline em { font-style: normal; color: var(--glow); }
+      .line { display: block; overflow: hidden; }
+      .line > span { display: inline-block; }
+      .count { position: absolute; left: 72px; right: 72px; bottom: 220px; }
+      .count .big { font-family: Geist; font-weight: 600; font-size: 260px; letter-spacing: -12px; line-height: .9; }
+      .count .label { font-size: 56px; font-weight: 800; letter-spacing: -2px; margin-top: 16px; }
+      .cta { background: var(--paper); color: var(--ground); }
+      .cta .mark { color: var(--ground); }
+      .cta .body { position: absolute; left: 72px; right: 72px; top: 560px; }
+      .cta h2 { font-size: 96px; font-weight: 800; line-height: 1.16; letter-spacing: -4px; }
+      .cta h2 em { font-style: normal; color: var(--brand); }
+      .cta p { font-size: 40px; font-weight: 500; line-height: 1.5; color: rgba(10,10,10,.66); margin-top: 36px; }
+      .pill { display: inline-flex; align-items: center; gap: 18px; margin-top: 72px; background: var(--brand); color: #fff; font-size: 44px; font-weight: 700; padding: 34px 56px; border-radius: 999px; }
+      .site { position: absolute; left: 72px; bottom: 140px; font-family: Geist; font-weight: 500; font-size: 34px; color: rgba(10,10,10,.5); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="17" data-width="1080" data-height="1920">
+
+      <!-- 1. Hook -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="2.9" data-track-index="0">
+        <img id="s1-img" src="assets/4fd92e71-e453-4781-8052-adc59b71e7d2.webp" style="object-position: 30% 50%" alt="" />
+        <div id="s1-dark" class="dark"></div>
+        <div class="shade"></div>
+        <span class="mark">siso-sign<i>.</i></span>
+        <div class="caption">
+          <h1 class="headline">
+            <span class="line"><span id="h1a">간판은</span></span>
+            <span class="line"><span id="h1b">가게의 <em>첫 문장</em>입니다.</span></span>
+          </h1>
+        </div>
+      </section>
+
+      <!-- 2–6. Works -->
+      <section id="w1" class="scene clip work" data-start="2.6" data-duration="2.0" data-track-index="1">
+        <img src="assets/ac7a7238-6e90-49b4-85a7-ba1e7f52b52f.webp" style="object-position: 50% 40%" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="caption"><div class="rule"></div><p class="eyebrow">Record bar</p><p class="name">objktt Record Bar</p><p class="desc">오브옉트 레코드바</p></div>
+      </section>
+      <section id="w2" class="scene clip work" data-start="4.3" data-duration="2.0" data-track-index="2">
+        <img src="assets/1774791730517-8h5kd1z.webp" style="object-position: 50% 45%" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="caption"><div class="rule"></div><p class="eyebrow">Restaurant</p><p class="name">you need ramen</p><p class="desc">라멘 전문점 · 입체 간판</p></div>
+      </section>
+      <section id="w3" class="scene clip work" data-start="6.0" data-duration="2.0" data-track-index="1">
+        <img src="assets/1768138605147-b3trydt.webp" style="object-position: 55% 50%" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="caption"><div class="rule"></div><p class="eyebrow">Retail</p><p class="name">scalartis</p><p class="desc">매장 내부 사인</p></div>
+      </section>
+      <section id="w4" class="scene clip work" data-start="7.7" data-duration="2.0" data-track-index="2">
+        <img src="assets/1774577309257-k3f46fh.webp" style="object-position: 50% 50%" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="caption"><div class="rule"></div><p class="eyebrow">Academy</p><p class="name">ANIFORCE</p><p class="desc">애니포스만화학원 분당점</p></div>
+      </section>
+      <section id="w5" class="scene clip work" data-start="9.4" data-duration="1.9" data-track-index="1">
+        <img src="assets/01f596f0-0b67-42b5-bf5d-7e88da1afc2d.webp" style="object-position: 30% 50%" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="caption"><div class="rule"></div><p class="eyebrow">Office</p><p class="name">Next ID</p><p class="desc">후광 입체 사인</p></div>
+      </section>
+
+      <!-- 7. Quick cuts + count -->
+      <section id="s7" class="scene clip" data-start="11.1" data-duration="2.1" data-track-index="0">
+        <img class="cut" src="assets/1774573305635-rytblrl.webp" style="object-position: 40% 50%" alt="" />
+        <img class="cut" src="assets/1774577523405-v2x8u1g.webp" alt="" />
+        <img class="cut" src="assets/81465a6c-9f00-497c-b2af-9fe3c5a4bce6.webp" style="object-position: 50% 45%" alt="" />
+        <img class="cut" src="assets/67f74bc4-e5a1-44f5-a61f-83ea5cd73574.webp" alt="" />
+        <div class="shade"></div><span class="mark">siso-sign<i>.</i></span>
+        <div class="count"><p class="big" id="n33">33</p><p class="label">개의 공간, 첫인상을 만들었습니다.</p></div>
+      </section>
+
+      <!-- 8. CTA -->
+      <section id="s8" class="scene clip cta" data-start="13.1" data-duration="3.9" data-track-index="1">
+        <span class="mark">siso-sign<i>.</i></span>
+        <div class="body">
+          <h2 id="cta-h">우리 가게의 <em>첫인상</em>,<br />사진 한 장으로<br />시작하세요.</h2>
+          <p id="cta-p">현장 사진을 DM으로 보내주시면<br />어울리는 간판을 제안해 드립니다.</p>
+          <span id="cta-pill" class="pill">DM으로 상담하기</span>
+        </div>
+        <span class="site">siso-sign.com</span>
+      </section>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Hook: the sign comes out of the dark like it is switched on, then the headline rises.
+      tl.fromTo('#s1-img', { scale: 1.12 }, { scale: 1, duration: 2.9, ease: 'power2.out' }, 0);
+      tl.fromTo('#s1-dark', { opacity: 1 }, { opacity: 0, duration: 0.9, ease: 'power3.in' }, 0.15);
+      tl.fromTo('#h1a', { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'power4.out' }, 0.75);
+      tl.fromTo('#h1b', { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'power4.out' }, 0.95);
+
+      // Works: fade in over the previous scene, slow push-in, caption slides up.
+      ['#w1', '#w2', '#w3', '#w4', '#w5'].forEach((id, i) => {
+        const start = 2.6 + i * 1.7;
+        tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'none' }, start);
+        tl.fromTo(`${id} img`, { scale: 1.14 }, { scale: 1.02, duration: 2.0, ease: 'none' }, start);
+        tl.fromTo(`${id} .caption > *`, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power3.out' }, start + 0.2);
+      });
+
+      // Quick cuts: four photos 0.3s apart, then the count lands.
+      tl.fromTo('#s7', { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'none' }, 11.1);
+      gsap.utils.toArray('#s7 .cut').forEach((img, i) => {
+        tl.set(img, { opacity: 0 }, 0);
+        tl.set(img, { opacity: 1 }, 11.1 + i * 0.3);
+        tl.fromTo(img, { scale: 1.1 }, { scale: 1, duration: 0.6, ease: 'power2.out' }, 11.1 + i * 0.3);
+      });
+      tl.fromTo('#s7 .count', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 11.7);
+
+      // CTA on paper.
+      tl.fromTo('#s8', { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'none' }, 13.1);
+      tl.fromTo(['#cta-h', '#cta-p', '#cta-pill'], { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.12, ease: 'power3.out' }, 13.25);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

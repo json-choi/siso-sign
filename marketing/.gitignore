@@ -1,0 +1,8 @@
+node_modules/
+media/
+reels-01/renders/
+reels-01/.hyperframes/
+*.log
+reels-01/assets/
+reels-01-output.mp4
+reels-01/snapshots/

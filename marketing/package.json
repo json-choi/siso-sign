@@ -1,0 +1,21 @@
+{
+  "name": "siso-sign-marketing",
+  "private": true,
+  "type": "module",
+  "description": "Instagram ads and reels for siso-sign, built from the live portfolio.",
+  "scripts": {
+    "fetch-media": "node scripts/fetch-media.mjs",
+    "carousel": "node instagram-carousel-01/render.mjs",
+    "reels:assets": "node scripts/reels-assets.mjs",
+    "reels:preview": "npm run reels:assets && cd reels-01 && hyperframes preview",
+    "reels:check": "npm run reels:assets && cd reels-01 && hyperframes check",
+    "reels:render": "npm run reels:assets && cd reels-01 && hyperframes render -o ../reels-01-output.mp4 -q delivery"
+  },
+  "devDependencies": {
+    "geist": "1.3.1",
+    "gsap": "3.13.0",
+    "hyperframes": "0.9.13",
+    "playwright": "1.63.0",
+    "pretendard": "1.3.9"
+  }
+}

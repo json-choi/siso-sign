@@ -5,13 +5,16 @@ import { Search, X } from 'lucide-react';
 import { icons } from 'lucide-react';
 
 const POPULAR_ICONS = [
-  'Heart', 'Star', 'User', 'Target', 'Eye', 'CheckCircle', 'Award', 'Shield',
+  'Heart', 'Star', 'User', 'Target', 'Eye', 'CircleCheck', 'Award', 'Shield',
   'Zap', 'Lightbulb', 'Rocket', 'Crown', 'Diamond', 'Gem', 'Trophy', 'Medal',
   'ThumbsUp', 'Smile', 'Sun', 'Moon', 'Sparkles', 'Flame', 'Leaf', 'Globe',
-  'Building', 'Home', 'Briefcase', 'Users', 'UserCheck', 'Handshake', 'Gift', 'Package',
-  'PenTool', 'Palette', 'Layout', 'Layers', 'Box', 'Cube', 'Hexagon', 'Circle',
+  'Building', 'House', 'Briefcase', 'Users', 'UserCheck', 'Handshake', 'Gift', 'Package',
+  'PenTool', 'Palette', 'Layout', 'Layers', 'Box', 'Hexagon', 'Circle',
   'MessageCircle', 'Mail', 'Phone', 'MapPin', 'Clock', 'Calendar', 'Bell', 'Flag',
 ];
+
+// Older lucide names that may still be stored in site settings.
+const LEGACY_NAMES: Record<string, string> = { CheckCircle: 'CircleCheck', Home: 'House', Cube: 'Box' };
 
 const allIconNames = Object.keys(icons);
 
@@ -42,7 +45,7 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
     return iconList;
   }, [search, showAll]);
 
-  const SelectedIcon = value ? icons[value as keyof typeof icons] : null;
+  const SelectedIcon = value ? icons[(LEGACY_NAMES[value] ?? value) as keyof typeof icons] : null;
 
   return (
     <div className="relative">
@@ -163,7 +166,7 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
 
 export function DynamicIcon({ name, className }: { name: string; className?: string }) {
   if (!name) return null;
-  const Icon = icons[name as keyof typeof icons];
+  const Icon = icons[(LEGACY_NAMES[name] ?? name) as keyof typeof icons];
   if (!Icon) return null;
   return <Icon className={className} />;
 }

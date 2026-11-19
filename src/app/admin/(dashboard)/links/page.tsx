@@ -1,278 +1,177 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, GripVertical, ExternalLink } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useFeedback } from '@/components/admin/AdminFeedback';
+import Modal from '@/components/admin/Modal';
+import SortableList from '@/components/admin/SortableList';
+import { Badge, Button, EmptyState, ErrorState, Field, LoadingState, PageHeader, Switch, TextInput } from '@/components/admin/ui';
+import { adminRequest, errorMessage } from '@/lib/admin-api';
 import type { SocialLink } from '@/types/database';
 
-export default function LinksPage() {
-  const [links, setLinks] = useState<SocialLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingItem, setEditingItem] = useState<SocialLink | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface Draft {
+  platform: string;
+  url: string;
+  is_active: boolean;
+}
 
-  useEffect(() => {
-    fetchLinks();
+const emptyDraft: Draft = { platform: '', url: '', is_active: true };
+const suggestions = ['Instagram', 'Blog', 'YouTube', 'KakaoTalk', 'Facebook'];
+
+export default function LinksPage() {
+  const feedback = useFeedback();
+  const [links, setLinks] = useState<SocialLink[] | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [editing, setEditing] = useState<SocialLink | 'new' | null>(null);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoadError('');
+    try {
+      setLinks(await adminRequest<SocialLink[]>('/api/admin/links'));
+    } catch (error) {
+      setLoadError(errorMessage(error, '링크를 불러오지 못했습니다.'));
+    }
   }, []);
 
-  const fetchLinks = async () => {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
+
+  const open = (item: SocialLink | 'new') => {
+    setEditing(item);
+    setDraft(item === 'new' ? emptyDraft : { platform: item.platform, url: item.url, is_active: item.is_active });
+  };
+  const close = useCallback(() => setEditing(null), []);
+
+  const save = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!links || !editing) return;
+    setSaving(true);
     try {
-      const res = await fetch('/api/admin/links');
-      const data = await res.json();
-      setLinks(Array.isArray(data) ? data : []);
-    } catch {
-      setLinks([]);
+      const body = { platform: draft.platform.trim(), url: draft.url.trim(), is_active: draft.is_active };
+      if (editing === 'new') {
+        const created = await adminRequest<SocialLink>('/api/admin/links', { method: 'POST', json: { ...body, sort_order: links.length } });
+        setLinks([...links, created]);
+      } else {
+        const updated = await adminRequest<SocialLink>(`/api/admin/links/${editing.id}`, { method: 'PUT', json: body });
+        setLinks(links.map((item) => (item.id === updated.id ? updated : item)));
+      }
+      feedback.success('저장했습니다.');
+      setEditing(null);
+    } catch (error) {
+      feedback.error(errorMessage(error, '저장하지 못했습니다.'));
     } finally {
-      setIsLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-    
-    await fetch(`/api/admin/links/${id}`, { method: 'DELETE' });
-    fetchLinks();
-  };
-
-  const openModal = (item?: SocialLink) => {
-    setEditingItem(item || null);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setEditingItem(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const data = {
-      platform: formData.get('platform'),
-      url: formData.get('url'),
-      icon: formData.get('icon'),
-      sort_order: parseInt(formData.get('sort_order') as string) || 0,
-      is_active: formData.get('is_active') === 'on',
-    };
-
-    if (editingItem) {
-      await fetch(`/api/admin/links/${editingItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    } else {
-      await fetch('/api/admin/links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+  const toggle = async (item: SocialLink) => {
+    if (!links) return;
+    const next = { ...item, is_active: !item.is_active };
+    setLinks(links.map((row) => (row.id === item.id ? next : row)));
+    try {
+      await adminRequest(`/api/admin/links/${item.id}`, { method: 'PUT', json: { is_active: next.is_active } });
+    } catch (error) {
+      setLinks((current) => current?.map((row) => (row.id === item.id ? item : row)) ?? null);
+      feedback.error(errorMessage(error, '변경하지 못했습니다.'));
     }
-
-    closeModal();
-    fetchLinks();
   };
 
-  if (isLoading) {
-    return <div className="text-white">로딩 중...</div>;
-  }
+  const remove = async (item: SocialLink) => {
+    const ok = await feedback.confirm({ title: '링크를 삭제할까요?', description: `${item.platform} 링크를 삭제합니다.`, confirmLabel: '삭제', danger: true });
+    if (!ok) return;
+    try {
+      await adminRequest(`/api/admin/links/${item.id}`, { method: 'DELETE' });
+      setLinks((current) => current?.filter((row) => row.id !== item.id) ?? null);
+      feedback.success('삭제했습니다.');
+    } catch (error) {
+      feedback.error(errorMessage(error, '삭제하지 못했습니다.'));
+    }
+  };
+
+  const reorder = async (next: SocialLink[]) => {
+    const previous = links;
+    setLinks(next);
+    try {
+      await adminRequest('/api/admin/links/order', { method: 'PUT', json: next.map((item) => item.id) });
+    } catch (error) {
+      setLinks(previous);
+      feedback.error(errorMessage(error, '순서를 저장하지 못했습니다.'));
+    }
+  };
+
+  if (loadError) return <ErrorState message={loadError} onRetry={() => void load()} />;
+  if (!links) return <LoadingState />;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-white">소셜 링크 관리</h1>
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          새 링크
-        </button>
-      </div>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title="소셜 링크"
+        description="사이트 하단과 홈 화면에 보이는 링크입니다. 손잡이를 끌어 순서를 바꾸세요."
+        actions={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 링크</Button>}
+      />
 
-      <div className="hidden md:block bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-white/10">
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">순서</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">플랫폼</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">URL</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">상태</th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">작업</th>
-            </tr>
-          </thead>
-          <tbody>
-            {links.map((item) => (
-              <tr key={item.id} className="border-b border-white/5 hover:bg-white/5">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <GripVertical className="w-4 h-4" />
-                    {item.sort_order}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-white font-medium">{item.platform}</td>
-                <td className="px-6 py-4">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-primary hover:underline"
-                  >
-                    {item.url.length > 40 ? `${item.url.slice(0, 40)}...` : item.url}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${item.is_active ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                    {item.is_active ? '활성' : '비활성'}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => openModal(item)}
-                      className="p-2 text-gray-400 hover:text-white transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {links.length === 0 && (
-          <div className="p-12 text-center text-gray-400">
-            등록된 소셜 링크가 없습니다.
-          </div>
-        )}
-      </div>
-
-      <div className="md:hidden space-y-4">
-        {links.map((item) => (
-          <div key={item.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="text-white font-medium">{item.platform}</h3>
-                <span className="text-xs text-gray-500">순서: {item.sort_order}</span>
-              </div>
-              <span className={`px-2 py-1 text-xs rounded ${item.is_active ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                {item.is_active ? '활성' : '비활성'}
-              </span>
-            </div>
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-primary hover:underline text-sm mb-4 break-all"
-            >
-              {item.url}
-              <ExternalLink className="w-3 h-3 flex-shrink-0" />
-            </a>
-            <div className="flex items-center justify-end gap-2">
-              <button onClick={() => openModal(item)} className="p-2 text-gray-400 hover:text-white">
-                <Pencil className="w-4 h-4" />
+      {links.length === 0 ? (
+        <EmptyState title="등록된 링크가 없습니다" action={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 링크</Button>} />
+      ) : (
+        <SortableList items={links} onReorder={(next) => void reorder(next)} label={(item) => item.platform}>
+          {(item) => (
+            <div className="flex items-center gap-3 pl-1">
+              <button onClick={() => open(item)} className="min-w-0 flex-1 text-left">
+                <span className="flex items-center gap-2">
+                  <span className="truncate font-medium text-white">{item.platform}</span>
+                  {!item.is_active && <Badge>숨김</Badge>}
+                </span>
+                <span className="mt-0.5 block truncate text-sm text-gray-500">{item.url}</span>
               </button>
-              <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-500">
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="flex shrink-0 items-center">
+                <span className="hidden sm:block"><Switch checked={item.is_active} onChange={() => void toggle(item)} label={<span className="sr-only">표시</span>} /></span>
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="hidden h-10 w-10 items-center justify-center rounded-lg text-gray-400 hover:bg-white/[0.06] hover:text-white sm:inline-flex" aria-label={`${item.platform} 열기`}>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+                <Button variant="ghost" size="icon" onClick={() => open(item)} aria-label={`${item.platform} 수정`}><Pencil className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="hover:text-red-400" onClick={() => void remove(item)} aria-label={`${item.platform} 삭제`}><Trash2 className="h-4 w-4" /></Button>
+              </div>
             </div>
-          </div>
-        ))}
-        {links.length === 0 && (
-          <div className="p-12 text-center text-gray-400 border border-white/10 rounded-xl bg-white/5">
-            등록된 소셜 링크가 없습니다.
-          </div>
-        )}
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
-          <div className="bg-[#111] border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto md:max-h-none">
-            <div className="p-6 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">
-                {editingItem ? '링크 수정' : '새 링크'}
-              </h2>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">플랫폼</label>
-                <input
-                  type="text"
-                  name="platform"
-                  defaultValue={editingItem?.platform || ''}
-                  required
-                  placeholder="예: Instagram, Facebook, KakaoTalk"
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">URL</label>
-                <input
-                  type="url"
-                  name="url"
-                  defaultValue={editingItem?.url || ''}
-                  required
-                  placeholder="https://"
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">아이콘 (Lucide 아이콘명)</label>
-                <input
-                  type="text"
-                  name="icon"
-                  defaultValue={editingItem?.icon || ''}
-                  placeholder="예: Instagram, Facebook, MessageCircle"
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">정렬 순서</label>
-                <input
-                  type="number"
-                  name="sort_order"
-                  defaultValue={editingItem?.sort_order || 0}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-gray-400">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    defaultChecked={editingItem?.is_active ?? true}
-                    className="rounded border-white/20"
-                  />
-                  활성화
-                </label>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 py-2 border border-white/10 text-gray-400 rounded-lg hover:bg-white/5 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  {editingItem ? '수정' : '추가'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          )}
+        </SortableList>
       )}
+
+      <Modal
+        open={editing !== null}
+        onClose={close}
+        title={editing === 'new' ? '새 링크' : '링크 수정'}
+        footer={
+          <>
+            <Button className="flex-1" onClick={close}>취소</Button>
+            <Button className="flex-1" variant="primary" type="submit" form="link-form" loading={saving}>저장</Button>
+          </>
+        }
+      >
+        <form id="link-form" onSubmit={save} className="space-y-5">
+          <Field label="이름" required>
+            {(id) => (
+              <>
+                <TextInput id={id} value={draft.platform} onChange={(event) => setDraft({ ...draft, platform: event.target.value })} placeholder="예: Instagram" required />
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {suggestions.map((name) => (
+                    <button key={name} type="button" onClick={() => setDraft({ ...draft, platform: name })} className="rounded-md bg-white/[0.06] px-2 py-1 text-xs text-gray-400 hover:bg-white/10 hover:text-white">
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </Field>
+          <Field label="주소" required>
+            {(id) => <TextInput id={id} type="url" inputMode="url" value={draft.url} onChange={(event) => setDraft({ ...draft, url: event.target.value })} placeholder="https://" required />}
+          </Field>
+          <Switch checked={draft.is_active} onChange={(value) => setDraft({ ...draft, is_active: value })} label="사이트에 표시" />
+        </form>
+      </Modal>
     </div>
   );
 }

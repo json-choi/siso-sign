@@ -1,319 +1,137 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Save, Check, Lock, Eye, EyeOff } from 'lucide-react';
-import RichTextEditor from '@/components/admin/RichTextEditor';
+import { useState } from 'react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
+import { useFeedback } from '@/components/admin/AdminFeedback';
+import { ABOUT_KEYS } from '@/components/admin/about-fields';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+import RichTextEditor from '@/components/admin/RichTextEditor';
+import { Button, Card, ErrorState, Field, LoadingState, PageHeader, SaveBar, TextInput } from '@/components/admin/ui';
+import { useSettingsDraft } from '@/components/admin/useSettingsDraft';
+import { adminRequest, errorMessage } from '@/lib/admin-api';
 import type { SiteSetting } from '@/types/database';
 
-const isImageField = (key: string) => {
-  return key.includes('image') || key.includes('logo') || key.includes('thumbnail') || key.includes('photo');
-};
+const GROUPS: { id: string; label: string; prefix: string | null }[] = [
+  { id: 'site', label: '사이트 정보', prefix: 'site_' },
+  { id: 'hero', label: '히어로 섹션', prefix: 'hero_' },
+  { id: 'about', label: '소개', prefix: 'about_' },
+  { id: 'contact', label: '연락처', prefix: 'contact_' },
+  { id: 'business', label: '사업자 정보', prefix: 'business_' },
+  { id: 'footer', label: '푸터', prefix: 'footer_' },
+  { id: 'etc', label: '기타', prefix: null },
+];
+
+const isImageField = (key: string) => ['image', 'logo', 'thumbnail', 'photo'].some((word) => key.includes(word));
+const isRichField = (key: string) => key.includes('text') || key.includes('description');
+
+function groupOf(key: string): string {
+  return GROUPS.find((group) => group.prefix && key.startsWith(group.prefix))?.id ?? 'etc';
+}
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<SiteSetting[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editedValues, setEditedValues] = useState<Record<string, string>>({});
-  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
-  
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const draft = useSettingsDraft();
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  if (draft.loadError) return <ErrorState message={draft.loadError} onRetry={draft.reload} />;
+  if (!draft.settings) return <LoadingState rows={4} />;
 
-  const fetchSettings = async () => {
-    try {
-      const res = await fetch('/api/admin/settings');
-      const data = await res.json();
-      setSettings(Array.isArray(data) ? data : []);
-    } catch {
-      setSettings([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Fields edited on the About page are not repeated here.
+  const visible = draft.settings.filter((setting) => !ABOUT_KEYS.has(setting.key));
+  const groups = GROUPS.map((group) => ({ ...group, items: visible.filter((setting) => groupOf(setting.key) === group.id) })).filter((group) => group.items.length);
 
-  const handleChange = (key: string, value: string) => {
-    setEditedValues((prev) => ({ ...prev, [key]: value }));
-    setSavedKeys((prev) => {
-      const next = new Set(prev);
-      next.delete(key);
-      return next;
-    });
-  };
-
-  const handleSave = async (setting: SiteSetting) => {
-    const value = editedValues[setting.key] ?? setting.value;
-    
-    await fetch('/api/admin/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: setting.key, value }),
-    });
-
-    setSavedKeys((prev) => new Set(prev).add(setting.key));
-    
-    setSettings((prev) =>
-      prev.map((s) => (s.key === setting.key ? { ...s, value } : s))
-    );
-    
-    setEditedValues((prev) => {
-      const next = { ...prev };
-      delete next[setting.key];
-      return next;
-    });
-
-    setTimeout(() => {
-      setSavedKeys((prev) => {
-        const next = new Set(prev);
-        next.delete(setting.key);
-        return next;
-      });
-    }, 2000);
-  };
-
-  const getDisplayValue = (setting: SiteSetting) => {
-    return editedValues[setting.key] ?? setting.value ?? '';
-  };
-
-  const hasChanges = (key: string) => {
-    return key in editedValues;
-  };
-
-  const handlePasswordChange = async () => {
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('모든 필드를 입력해주세요.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('새 비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다.');
-      return;
-    }
-
-    setIsChangingPassword(true);
-
-    try {
-      const res = await fetch('/api/admin/password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setPasswordError(data.error || '비밀번호 변경에 실패했습니다.');
-        return;
+  const renderInput = (setting: SiteSetting) => (
+    <Field key={setting.key} label={setting.description || setting.key} dirty={draft.isDirty(setting.key)}>
+      {(id) =>
+        isRichField(setting.key) ? (
+          <RichTextEditor content={draft.value(setting.key)} onChange={(html) => draft.change(setting.key, html)} />
+        ) : isImageField(setting.key) ? (
+          <ImageUploadField value={draft.value(setting.key)} onChange={(url) => draft.change(setting.key, url)} />
+        ) : (
+          <TextInput id={id} value={draft.value(setting.key)} onChange={(event) => draft.change(setting.key, event.target.value)} />
+        )
       }
-
-      setPasswordSuccess('비밀번호가 변경되었습니다.');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-
-      setTimeout(() => setPasswordSuccess(''), 3000);
-    } catch {
-      setPasswordError('서버 오류가 발생했습니다.');
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="text-white">로딩 중...</div>;
-  }
-
-  const groupOrder = [
-    '사이트 정보',
-    '히어로 섹션',
-    '소개',
-    '연락처',
-    '사업자 정보',
-    '푸터',
-    '기타',
-  ];
-
-  const groupedSettings = settings.reduce((acc, setting) => {
-    let group = '기타';
-    if (setting.key.startsWith('site_')) group = '사이트 정보';
-    else if (setting.key.startsWith('hero_')) group = '히어로 섹션';
-    else if (setting.key.startsWith('about_')) group = '소개';
-    else if (setting.key.startsWith('contact_')) group = '연락처';
-    else if (setting.key.startsWith('business_')) group = '사업자 정보';
-    else if (setting.key.startsWith('footer_')) group = '푸터';
-    
-    if (!acc[group]) acc[group] = [];
-    acc[group].push(setting);
-    return acc;
-  }, {} as Record<string, SiteSetting[]>);
-
-  const sortedGroups = Object.entries(groupedSettings).sort(
-    ([a], [b]) => groupOrder.indexOf(a) - groupOrder.indexOf(b)
+    </Field>
   );
 
   return (
-    <div>
-      <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">사이트 설정</h1>
+    <div className="mx-auto max-w-4xl">
+      <PageHeader title="사이트 설정" description="여러 항목을 고친 뒤 아래 저장 버튼으로 한 번에 저장하세요." />
 
-      <div className="space-y-6 md:space-y-8">
-        {sortedGroups.map(([group, groupSettings]) => (
-          <div key={group} className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6">
-            <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">{group}</h2>
-            <div className="space-y-4 md:space-y-6">
-              {groupSettings.map((setting) => (
-                <div key={setting.key}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                    <label className="text-sm font-medium text-gray-400">
-                      {setting.description || setting.key}
-                    </label>
-                    <button
-                      onClick={() => handleSave(setting)}
-                      disabled={!hasChanges(setting.key) && !savedKeys.has(setting.key)}
-                      className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded text-sm transition-colors w-full sm:w-auto ${
-                        savedKeys.has(setting.key)
-                          ? 'bg-green-500/20 text-green-500'
-                          : hasChanges(setting.key)
-                          ? 'bg-primary text-black hover:bg-primary/90'
-                          : 'bg-white/5 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      {savedKeys.has(setting.key) ? (
-                        <>
-                          <Check className="w-4 h-4" />
-                          저장됨
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4" />
-                          저장
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  {setting.key.includes('text') || setting.key.includes('description') ? (
-                    <RichTextEditor
-                      content={getDisplayValue(setting)}
-                      onChange={(html) => handleChange(setting.key, html)}
-                    />
-                  ) : isImageField(setting.key) ? (
-                    <ImageUploadField
-                      value={getDisplayValue(setting)}
-                      onChange={(url) => handleChange(setting.key, url)}
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      value={getDisplayValue(setting)}
-                      onChange={(e) => handleChange(setting.key, e.target.value)}
-                      className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+      <nav className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:px-0" aria-label="설정 구역">
+        {[...groups, { id: 'password', label: '비밀번호' }].map((group) => (
+          <a key={group.id} href={`#${group.id}`} className="shrink-0 rounded-full border border-white/10 px-3 py-1.5 text-sm text-gray-400 transition-colors hover:border-white/20 hover:text-white">
+            {group.label}
+          </a>
         ))}
+      </nav>
 
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center gap-2">
-            <Lock className="w-5 h-5" />
-            비밀번호 변경
-          </h2>
-          <div className="space-y-4 max-w-md">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                현재 비밀번호
-              </label>
-              <div className="relative">
-                <input
-                  type={showCurrentPassword ? 'text' : 'password'}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                새 비밀번호
-              </label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                새 비밀번호 확인
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base"
-              />
-            </div>
-
-            {passwordError && (
-              <p className="text-sm text-red-500">{passwordError}</p>
-            )}
-
-            {passwordSuccess && (
-              <p className="text-sm text-green-500">{passwordSuccess}</p>
-            )}
-
-            <button
-              onClick={handlePasswordChange}
-              disabled={isChangingPassword}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              <Lock className="w-4 h-4" />
-              {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
-            </button>
-
-            <p className="text-xs text-gray-500">
-              비밀번호는 최소 6자 이상이어야 합니다. 변경 후에는 새 비밀번호로 로그인하세요.
-            </p>
-          </div>
-        </div>
+      <div className="space-y-4 md:space-y-6">
+        {groups.map((group) => (
+          <Card key={group.id} id={group.id} title={group.label}>
+            <div className="space-y-5">{group.items.map(renderInput)}</div>
+          </Card>
+        ))}
+        <PasswordCard />
       </div>
+
+      <SaveBar count={draft.dirtyCount} saving={draft.saving} onSave={() => void draft.save()} onDiscard={draft.discard} />
     </div>
+  );
+}
+
+function PasswordCard() {
+  const feedback = useFeedback();
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    if (next.length < 6) return setError('새 비밀번호는 6자 이상이어야 합니다.');
+    if (next !== confirm) return setError('새 비밀번호가 서로 다릅니다.');
+    setSaving(true);
+    try {
+      await adminRequest('/api/admin/password', { method: 'PUT', json: { currentPassword: current, newPassword: next } });
+      setCurrent('');
+      setNext('');
+      setConfirm('');
+      feedback.success('비밀번호를 변경했습니다. 다음 로그인부터 새 비밀번호를 사용하세요.');
+    } catch (err) {
+      setError(errorMessage(err, '비밀번호를 변경하지 못했습니다.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const type = show ? 'text' : 'password';
+
+  return (
+    <Card
+      id="password"
+      title={<span className="flex items-center gap-2"><Lock className="h-4 w-4" />비밀번호 변경</span>}
+      actions={
+        <button type="button" onClick={() => setShow(!show)} className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-gray-400 hover:text-white" aria-pressed={show}>
+          {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {show ? '숨기기' : '보기'}
+        </button>
+      }
+    >
+      <form onSubmit={submit} className="max-w-md space-y-4">
+        <Field label="현재 비밀번호">
+          {(id) => <TextInput id={id} type={type} autoComplete="current-password" value={current} onChange={(event) => setCurrent(event.target.value)} required />}
+        </Field>
+        <Field label="새 비밀번호" hint="6자 이상">
+          {(id) => <TextInput id={id} type={type} autoComplete="new-password" value={next} onChange={(event) => setNext(event.target.value)} required minLength={6} />}
+        </Field>
+        <Field label="새 비밀번호 확인">
+          {(id) => <TextInput id={id} type={type} autoComplete="new-password" value={confirm} onChange={(event) => setConfirm(event.target.value)} required />}
+        </Field>
+        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        <Button type="submit" variant="primary" loading={saving} className="w-full sm:w-auto">비밀번호 변경</Button>
+      </form>
+    </Card>
   );
 }

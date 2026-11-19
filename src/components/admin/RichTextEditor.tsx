@@ -23,7 +23,7 @@ import {
   Undo,
   Redo,
 } from 'lucide-react';
-import { useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface RichTextEditorProps {
   content: string;
@@ -52,9 +52,11 @@ const colors = [
 ];
 
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
+  const [palette, setPalette] = useState<'color' | 'highlight' | null>(null);
   const editor = useEditor({
+    shouldRerenderOnTransaction: true,
     extensions: [
-      StarterKit,
+      StarterKit.configure({ underline: false }),
       Underline,
       TextStyle,
       FontFamily,
@@ -66,7 +68,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none min-h-[150px] px-4 py-3 focus:outline-none',
+        class: 'prose prose-invert max-w-none min-h-[150px] px-4 py-3 text-base focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
@@ -99,40 +101,17 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     editor.chain().focus().setColor(color).run();
   }, [editor]);
 
-  if (!editor) return null;
-
-  const ToolbarButton = ({ 
-    onClick, 
-    isActive = false, 
-    children,
-    title,
-  }: { 
-    onClick: () => void; 
-    isActive?: boolean; 
-    children: React.ReactNode;
-    title?: string;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className={`p-2 rounded transition-colors ${
-        isActive 
-          ? 'bg-primary text-black' 
-          : 'text-gray-400 hover:bg-white/10 hover:text-white'
-      }`}
-    >
-      {children}
-    </button>
-  );
+  if (!editor) {
+    return <div className="min-h-[190px] animate-pulse rounded-lg border border-white/10 bg-white/[0.03]" />;
+  }
 
   return (
-    <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5">
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-white/10 bg-black/20">
+    <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-white/10 bg-black/20 p-1.5 [scrollbar-width:none]">
         <select
           onChange={(e) => setFontFamily(e.target.value)}
-          className="px-2 py-1.5 bg-white/5 border border-white/10 rounded text-sm text-white focus:outline-none focus:border-primary"
-          title="폰트"
+          className="h-8 shrink-0 rounded-md border border-white/10 bg-white/5 px-2 text-sm text-white focus:border-primary focus:outline-none"
+          aria-label="폰트"
         >
           {fontFamilies.map((font) => (
             <option key={font.value} value={font.value} className="bg-[#111]">
@@ -143,8 +122,9 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
 
         <select
           onChange={(e) => setFontSize(e.target.value)}
-          className="px-2 py-1.5 bg-white/5 border border-white/10 rounded text-sm text-white focus:outline-none focus:border-primary"
-          title="글자 크기"
+          defaultValue="1rem"
+          className="h-8 shrink-0 rounded-md border border-white/10 bg-white/5 px-2 text-sm text-white focus:border-primary focus:outline-none"
+          aria-label="글자 크기"
         >
           {fontSizes.map((size) => (
             <option key={size.value} value={size.value} className="bg-[#111]">
@@ -153,146 +133,121 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           ))}
         </select>
 
-        <div className="w-px h-6 bg-white/10 mx-1" />
+        <Divider />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive('bold')}
-          title="굵게"
-        >
-          <Bold className="w-4 h-4" />
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="굵게">
+          <Bold className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')} title="기울임">
+          <Italic className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')} title="밑줄">
+          <UnderlineIcon className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="취소선">
+          <Strikethrough className="h-4 w-4" />
         </ToolbarButton>
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive('italic')}
-          title="기울임"
-        >
-          <Italic className="w-4 h-4" />
+        <Divider />
+
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} isActive={editor.isActive({ textAlign: 'left' })} title="왼쪽 정렬">
+          <AlignLeft className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} isActive={editor.isActive({ textAlign: 'center' })} title="가운데 정렬">
+          <AlignCenter className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="오른쪽 정렬">
+          <AlignRight className="h-4 w-4" />
         </ToolbarButton>
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          isActive={editor.isActive('underline')}
-          title="밑줄"
-        >
-          <UnderlineIcon className="w-4 h-4" />
+        <Divider />
+
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="글머리 기호">
+          <List className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="번호 목록">
+          <ListOrdered className="h-4 w-4" />
         </ToolbarButton>
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          isActive={editor.isActive('strike')}
-          title="취소선"
-        >
-          <Strikethrough className="w-4 h-4" />
+        <Divider />
+
+        <ToolbarButton onClick={() => setPalette(palette === 'color' ? null : 'color')} isActive={palette === 'color'} title="글자 색상">
+          <Palette className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => setPalette(palette === 'highlight' ? null : 'highlight')} isActive={palette === 'highlight'} title="하이라이트">
+          <Highlighter className="h-4 w-4" />
         </ToolbarButton>
 
-        <div className="w-px h-6 bg-white/10 mx-1" />
+        <Divider />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          isActive={editor.isActive({ textAlign: 'left' })}
-          title="왼쪽 정렬"
-        >
-          <AlignLeft className="w-4 h-4" />
+        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="실행 취소">
+          <Undo className="h-4 w-4" />
         </ToolbarButton>
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          isActive={editor.isActive({ textAlign: 'center' })}
-          title="가운데 정렬"
-        >
-          <AlignCenter className="w-4 h-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          isActive={editor.isActive({ textAlign: 'right' })}
-          title="오른쪽 정렬"
-        >
-          <AlignRight className="w-4 h-4" />
-        </ToolbarButton>
-
-        <div className="w-px h-6 bg-white/10 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive('bulletList')}
-          title="글머리 기호"
-        >
-          <List className="w-4 h-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive('orderedList')}
-          title="번호 목록"
-        >
-          <ListOrdered className="w-4 h-4" />
-        </ToolbarButton>
-
-        <div className="w-px h-6 bg-white/10 mx-1" />
-
-        <div className="relative group">
-          <button
-            type="button"
-            className="p-2 rounded text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
-            title="글자 색상"
-          >
-            <Palette className="w-4 h-4" />
-          </button>
-          <div className="absolute top-full left-0 mt-1 p-2 bg-[#111] border border-white/10 rounded-lg hidden group-hover:grid grid-cols-5 gap-1 z-10">
-            {colors.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => setColor(color)}
-                className="w-6 h-6 rounded border border-white/20 hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="relative group">
-          <button
-            type="button"
-            className="p-2 rounded text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
-            title="하이라이트"
-          >
-            <Highlighter className="w-4 h-4" />
-          </button>
-          <div className="absolute top-full left-0 mt-1 p-2 bg-[#111] border border-white/10 rounded-lg hidden group-hover:grid grid-cols-5 gap-1 z-10">
-            {colors.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => editor.chain().focus().toggleHighlight({ color }).run()}
-                className="w-6 h-6 rounded border border-white/20 hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="w-px h-6 bg-white/10 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          title="실행 취소"
-        >
-          <Undo className="w-4 h-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          title="다시 실행"
-        >
-          <Redo className="w-4 h-4" />
+        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="다시 실행">
+          <Redo className="h-4 w-4" />
         </ToolbarButton>
       </div>
 
+      {palette && (
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-white/10 bg-black/30 px-2 py-2">
+          <span className="mr-1 text-xs text-gray-500">{palette === 'color' ? '글자 색상' : '하이라이트'}</span>
+          {colors.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => {
+                if (palette === 'color') setColor(color);
+                else editor.chain().focus().toggleHighlight({ color }).run();
+                setPalette(null);
+              }}
+              className="h-7 w-7 rounded-md border border-white/20 transition-transform hover:scale-110"
+              style={{ backgroundColor: color }}
+              aria-label={color}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              if (palette === 'color') editor.chain().focus().unsetColor().run();
+              else editor.chain().focus().unsetHighlight().run();
+              setPalette(null);
+            }}
+            className="ml-1 rounded-md px-2 py-1 text-xs text-gray-400 hover:bg-white/5 hover:text-white"
+          >
+            지우기
+          </button>
+        </div>
+      )}
+
       <EditorContent editor={editor} />
     </div>
+  );
+}
+
+function Divider() {
+  return <div className="mx-1 h-5 w-px shrink-0 bg-white/10" aria-hidden />;
+}
+
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  children: React.ReactNode;
+  title: string;
+}
+
+function ToolbarButton({ onClick, isActive = false, children, title }: ToolbarButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      aria-pressed={isActive}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors ${
+        isActive ? 'bg-primary text-white' : 'text-gray-400 hover:bg-white/10 hover:text-white'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Palette, Layout, Frame, PenTool, Layers, Box, Monitor, Type } from 'lucide-react';
+import { Box } from 'lucide-react';
+import { SERVICE_ICONS } from '@/lib/service-icons';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import RichContent from '@/components/RichContent';
@@ -22,16 +23,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 0;
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Palette,
-  Layout,
-  Frame,
-  PenTool,
-  Layers,
-  Box,
-  Monitor,
-  Type
-};
+const iconMap = SERVICE_ICONS;
 
 async function getServices() {
   const { data } = await contentDb

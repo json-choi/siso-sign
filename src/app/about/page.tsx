@@ -39,7 +39,7 @@ const defaultValues: Record<string, string> = {
   about_value_3_icon: 'Eye',
   about_value_4_title: '완벽',
   about_value_4_subtitle: 'Perfection',
-  about_value_4_icon: 'CheckCircle',
+  about_value_4_icon: 'CircleCheck',
 };
 
 async function getAboutSettings() {

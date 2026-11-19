@@ -1,23 +1,22 @@
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminMobileHeader from '@/components/admin/AdminMobileHeader';
 import { SidebarProvider } from '@/components/admin/AdminSidebarContext';
+import { FeedbackProvider } from '@/components/admin/AdminFeedback';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-[#0a0a0a]">
-        <AdminMobileHeader />
-        <div className="flex">
+      <FeedbackProvider>
+        <div className="min-h-dvh bg-[#0a0a0a] text-gray-200 lg:flex">
           <AdminSidebar />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pt-20 lg:pt-8 min-h-screen w-full overflow-x-hidden">
-            {children}
-          </main>
+          <div className="min-w-0 flex-1">
+            <AdminMobileHeader />
+            <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6 lg:px-8 lg:py-10">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </FeedbackProvider>
     </SidebarProvider>
   );
 }

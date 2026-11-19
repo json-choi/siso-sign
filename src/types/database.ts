@@ -1,8 +1,11 @@
+import type { ProjectType } from '@/lib/project-types';
+
 export interface Portfolio {
   id: string;
   title: string;
   description: string | null;
   category: string | null;
+  project_type: ProjectType | null;
   image_url: string | null;
   images: string[] | null;
   thumbnail_url: string | null;
@@ -46,6 +49,12 @@ export interface SocialLink {
 
 export type PortfolioInsert = Omit<Portfolio, 'id' | 'created_at' | 'updated_at'>;
 export type PortfolioUpdate = Partial<PortfolioInsert>;
+
+export interface PortfolioPlacement {
+  id: string;
+  project_type: ProjectType | null;
+  sort_order: number;
+}
 
 export type ServiceInsert = Omit<Service, 'id' | 'created_at' | 'updated_at'>;
 export type ServiceUpdate = Partial<ServiceInsert>;

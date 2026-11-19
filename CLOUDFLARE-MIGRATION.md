@@ -33,3 +33,11 @@ Vercel project only after cached Vercel DNS responses have expired. Original
 Supabase data and storage remain preserved as migration backups; they are not
 used by the Cloudflare application. Switching DNS back alone would not copy
 subsequent D1 or R2 writes back to Supabase.
+
+## Schema changes after cutover
+
+CI deploys code but does not run D1 migrations. Columns added after the initial
+import are created by `ensureSchema` in `src/lib/database-core.ts` on the first
+admin request that touches the table, and the call is idempotent. Today this
+covers `portfolios.project_type` (`commercial`, `retail`, or `NULL` for
+unclassified), which drives the admin board and the `/work` tabs.

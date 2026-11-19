@@ -1,266 +1,195 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useFeedback } from '@/components/admin/AdminFeedback';
+import Modal from '@/components/admin/Modal';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import SortableList from '@/components/admin/SortableList';
+import { Badge, Button, EmptyState, ErrorState, Field, LoadingState, PageHeader, Switch, TextInput } from '@/components/admin/ui';
+import { adminRequest, errorMessage } from '@/lib/admin-api';
+import { cn } from '@/lib/cn';
+import { SERVICE_ICONS } from '@/lib/service-icons';
+import { toPlainText } from '@/lib/text';
 import type { Service } from '@/types/database';
 
-export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingItem, setEditingItem] = useState<Service | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [description, setDescription] = useState('');
+interface Draft {
+  title: string;
+  description: string;
+  icon: string;
+  is_active: boolean;
+}
 
-  useEffect(() => {
-    fetchServices();
+const emptyDraft: Draft = { title: '', description: '', icon: 'Palette', is_active: true };
+
+export default function ServicesPage() {
+  const feedback = useFeedback();
+  const [services, setServices] = useState<Service[] | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [editing, setEditing] = useState<Service | 'new' | null>(null);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoadError('');
+    try {
+      setServices(await adminRequest<Service[]>('/api/admin/services'));
+    } catch (error) {
+      setLoadError(errorMessage(error, '서비스를 불러오지 못했습니다.'));
+    }
   }, []);
 
-  const fetchServices = async () => {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
+
+  const open = (item: Service | 'new') => {
+    setEditing(item);
+    setDraft(item === 'new' ? emptyDraft : { title: item.title, description: item.description ?? '', icon: item.icon ?? '', is_active: item.is_active });
+  };
+  const close = useCallback(() => setEditing(null), []);
+
+  const save = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!services || !editing) return;
+    setSaving(true);
     try {
-      const res = await fetch('/api/admin/services');
-      const data = await res.json();
-      setServices(Array.isArray(data) ? data : []);
-    } catch {
-      setServices([]);
+      const body = { ...draft, title: draft.title.trim(), icon: draft.icon || null };
+      if (editing === 'new') {
+        const created = await adminRequest<Service>('/api/admin/services', { method: 'POST', json: { ...body, sort_order: services.length } });
+        setServices([...services, created]);
+      } else {
+        const updated = await adminRequest<Service>(`/api/admin/services/${editing.id}`, { method: 'PUT', json: body });
+        setServices(services.map((item) => (item.id === updated.id ? updated : item)));
+      }
+      feedback.success('저장했습니다.');
+      setEditing(null);
+    } catch (error) {
+      feedback.error(errorMessage(error, '저장하지 못했습니다.'));
     } finally {
-      setIsLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-    
-    await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
-    fetchServices();
-  };
-
-  const openModal = (item?: Service) => {
-    setEditingItem(item || null);
-    setDescription(item?.description || '');
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setEditingItem(null);
-    setDescription('');
-    setIsModalOpen(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const data = {
-      title: formData.get('title'),
-      description: description,
-      icon: formData.get('icon'),
-      sort_order: parseInt(formData.get('sort_order') as string) || 0,
-      is_active: formData.get('is_active') === 'on',
-    };
-
-    if (editingItem) {
-      await fetch(`/api/admin/services/${editingItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    } else {
-      await fetch('/api/admin/services', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+  const toggle = async (item: Service) => {
+    if (!services) return;
+    const next = { ...item, is_active: !item.is_active };
+    setServices(services.map((row) => (row.id === item.id ? next : row)));
+    try {
+      await adminRequest(`/api/admin/services/${item.id}`, { method: 'PUT', json: { is_active: next.is_active } });
+    } catch (error) {
+      setServices((current) => current?.map((row) => (row.id === item.id ? item : row)) ?? null);
+      feedback.error(errorMessage(error, '변경하지 못했습니다.'));
     }
-
-    closeModal();
-    fetchServices();
   };
 
-  if (isLoading) {
-    return <div className="text-white">로딩 중...</div>;
-  }
+  const remove = async (item: Service) => {
+    const ok = await feedback.confirm({ title: '서비스를 삭제할까요?', description: `"${item.title}"을(를) 삭제합니다.`, confirmLabel: '삭제', danger: true });
+    if (!ok) return;
+    try {
+      await adminRequest(`/api/admin/services/${item.id}`, { method: 'DELETE' });
+      setServices((current) => current?.filter((row) => row.id !== item.id) ?? null);
+      feedback.success('삭제했습니다.');
+    } catch (error) {
+      feedback.error(errorMessage(error, '삭제하지 못했습니다.'));
+    }
+  };
+
+  const reorder = async (next: Service[]) => {
+    const previous = services;
+    setServices(next);
+    try {
+      await adminRequest('/api/admin/services/order', { method: 'PUT', json: next.map((item) => item.id) });
+    } catch (error) {
+      setServices(previous);
+      feedback.error(errorMessage(error, '순서를 저장하지 못했습니다.'));
+    }
+  };
+
+  if (loadError) return <ErrorState message={loadError} onRetry={() => void load()} />;
+  if (!services) return <LoadingState />;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-white">서비스 관리</h1>
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          새 서비스
-        </button>
-      </div>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title="서비스"
+        description="서비스 페이지에 보이는 항목입니다. 왼쪽 손잡이를 끌어 순서를 바꾸세요."
+        actions={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 서비스</Button>}
+      />
 
-      <div className="md:hidden space-y-4">
-        {services.map((item) => (
-          <div key={item.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="text-white font-medium">{item.title}</h3>
-                <span className="text-xs text-gray-500">{item.icon || '-'}</span>
-              </div>
-              <span className={`px-2 py-1 text-xs rounded ${item.is_active ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                {item.is_active ? '활성' : '비활성'}
-              </span>
-            </div>
-            <p className="text-sm text-gray-400 mb-4 line-clamp-2">{item.description || '-'}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">순서: {item.sort_order}</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => openModal(item)} className="p-2 text-gray-400 hover:text-white">
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-500">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-        {services.length === 0 && (
-          <div className="p-12 text-center text-gray-400 bg-white/5 border border-white/10 rounded-xl">
-            등록된 서비스가 없습니다.
-          </div>
-        )}
-      </div>
-
-      <div className="hidden md:block bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-white/10">
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">순서</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">아이콘</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">제목</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">설명</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">상태</th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">작업</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.map((item) => (
-              <tr key={item.id} className="border-b border-white/5 hover:bg-white/5">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <GripVertical className="w-4 h-4" />
-                    {item.sort_order}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-gray-400">{item.icon || '-'}</td>
-                <td className="px-6 py-4 text-white font-medium">{item.title}</td>
-                <td className="px-6 py-4 text-gray-400 max-w-xs truncate">
-                  {item.description || '-'}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${item.is_active ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                    {item.is_active ? '활성' : '비활성'}
+      {services.length === 0 ? (
+        <EmptyState title="등록된 서비스가 없습니다" action={<Button variant="primary" onClick={() => open('new')}><Plus className="h-4 w-4" />새 서비스</Button>} />
+      ) : (
+        <SortableList items={services} onReorder={(next) => void reorder(next)} label={(item) => item.title}>
+          {(item) => {
+            const Icon = (item.icon && SERVICE_ICONS[item.icon]) || SERVICE_ICONS.Box;
+            return (
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <button onClick={() => open(item)} className="min-w-0 flex-1 text-left">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate font-medium text-white">{item.title}</span>
+                    {!item.is_active && <Badge>숨김</Badge>}
                   </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => openModal(item)}
-                      className="p-2 text-gray-400 hover:text-white transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {services.length === 0 && (
-          <div className="p-12 text-center text-gray-400">
-            등록된 서비스가 없습니다.
-          </div>
-        )}
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
-          <div className="bg-[#111] border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto md:max-h-none">
-            <div className="p-6 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">
-                {editingItem ? '서비스 수정' : '새 서비스'}
-              </h2>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">제목</label>
-                <input
-                  type="text"
-                  name="title"
-                  defaultValue={editingItem?.title || ''}
-                  required
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">설명</label>
-                <RichTextEditor
-                  content={description}
-                  onChange={setDescription}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">아이콘 (Lucide 아이콘명)</label>
-                <input
-                  type="text"
-                  name="icon"
-                  defaultValue={editingItem?.icon || ''}
-                  placeholder="예: Palette, Layout, PenTool"
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">정렬 순서</label>
-                <input
-                  type="number"
-                  name="sort_order"
-                  defaultValue={editingItem?.sort_order || 0}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-gray-400">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    defaultChecked={editingItem?.is_active ?? true}
-                    className="rounded border-white/20"
-                  />
-                  활성화
-                </label>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 py-2 border border-white/10 text-gray-400 rounded-lg hover:bg-white/5 transition-colors"
-                >
-                  취소
+                  <span className="mt-0.5 block truncate text-sm text-gray-500">{toPlainText(item.description) || '설명 없음'}</span>
                 </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  {editingItem ? '수정' : '추가'}
-                </button>
+                <div className="flex shrink-0 items-center">
+                  <span className="hidden sm:block"><Switch checked={item.is_active} onChange={() => void toggle(item)} label={<span className="sr-only">표시</span>} /></span>
+                  <Button variant="ghost" size="icon" onClick={() => open(item)} aria-label={`${item.title} 수정`}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="hover:text-red-400" onClick={() => void remove(item)} aria-label={`${item.title} 삭제`}><Trash2 className="h-4 w-4" /></Button>
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
+            );
+          }}
+        </SortableList>
       )}
+
+      <Modal
+        open={editing !== null}
+        onClose={close}
+        title={editing === 'new' ? '새 서비스' : '서비스 수정'}
+        footer={
+          <>
+            <Button className="flex-1" onClick={close}>취소</Button>
+            <Button className="flex-1" variant="primary" type="submit" form="service-form" loading={saving}>저장</Button>
+          </>
+        }
+      >
+        <form id="service-form" onSubmit={save} className="space-y-5">
+          <Field label="제목" required>
+            {(id) => <TextInput id={id} value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} required />}
+          </Field>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-300">아이콘</p>
+            <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="아이콘">
+              {Object.entries(SERVICE_ICONS).map(([name, Icon]) => (
+                <button
+                  key={name}
+                  type="button"
+                  role="radio"
+                  aria-checked={draft.icon === name}
+                  aria-label={name}
+                  onClick={() => setDraft({ ...draft, icon: name })}
+                  className={cn(
+                    'flex h-12 items-center justify-center rounded-lg border transition-colors',
+                    draft.icon === name ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-gray-400 hover:border-white/20 hover:text-white',
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-300">설명</p>
+            <RichTextEditor content={draft.description} onChange={(html) => setDraft((current) => ({ ...current, description: html }))} />
+          </div>
+          <Switch checked={draft.is_active} onChange={(value) => setDraft({ ...draft, is_active: value })} label="사이트에 표시" />
+        </form>
+      </Modal>
     </div>
   );
 }

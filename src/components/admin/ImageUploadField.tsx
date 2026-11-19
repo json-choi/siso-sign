@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { inputClass } from '@/components/admin/ui';
+import { cn } from '@/lib/cn';
 import { uploadImage } from '@/lib/upload';
 
 interface ImageUploadFieldProps {
@@ -29,8 +31,8 @@ export default function ImageUploadField({
     try {
       const url = await uploadImage(file);
       onChange(url);
-    } catch {
-      setError('업로드 중 오류가 발생했습니다.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '업로드 중 오류가 발생했습니다.');
     } finally {
       setIsUploading(false);
     }
@@ -65,7 +67,7 @@ export default function ImageUploadField({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full px-3 md:px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary text-sm md:text-base pr-10"
+            className={cn(inputClass, 'pr-10')}
           />
           {value && (
             <button
@@ -91,7 +93,7 @@ export default function ImageUploadField({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-white hover:bg-white/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.06] px-3 text-white transition-colors hover:bg-white/10 disabled:opacity-50"
           title="이미지 업로드"
         >
           {isUploading ? (
@@ -108,7 +110,7 @@ export default function ImageUploadField({
       )}
 
       {value && (value.startsWith('/media/') || value.startsWith('http')) && (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-white/5 mt-2">
+        <div className="relative mt-2 aspect-video w-full max-w-md overflow-hidden rounded-lg bg-white/5">
           <Image
             src={value}
             alt="미리보기"

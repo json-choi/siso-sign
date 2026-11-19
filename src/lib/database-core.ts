@@ -1,5 +1,6 @@
 import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types';
-import type { Portfolio, Service, SiteSetting, SocialLink } from '@/types/database';
+import type { Portfolio, PortfolioPlacement, Service, SiteSetting, SocialLink } from '@/types/database';
+import { isProjectType } from '@/lib/project-types';
 
 type Rows = {
   portfolios: Portfolio;
@@ -11,7 +12,7 @@ type Rows = {
 type Table = keyof Rows;
 type Result<T> = { data: T | null; error: { message: string } | null; count: number | null };
 const columns: Record<Table, string[]> = {
-  portfolios: ['id','title','description','category','image_url','images','thumbnail_url','tags','is_featured','is_published','sort_order','created_at','updated_at'],
+  portfolios: ['id','title','description','category','project_type','image_url','images','thumbnail_url','tags','is_featured','is_published','sort_order','created_at','updated_at'],
   services: ['id','title','description','icon','sort_order','is_active','created_at','updated_at'],
   site_settings: ['id','key','value','type','description','updated_at'],
   social_links: ['id','platform','url','icon','sort_order','is_active','created_at'],
@@ -30,6 +31,32 @@ function decode<T extends Table>(row: Record<string, unknown>): Rows[T] {
   return Object.fromEntries(Object.entries(row).map(([key,value]) => [key,
     value === null ? null : jsonColumns.has(key) ? JSON.parse(String(value)) : booleanColumns.has(key) ? Boolean(value) : value,
   ])) as unknown as Rows[T];
+}
+const PROJECT_TYPE_COLUMN = `ALTER TABLE "portfolios" ADD COLUMN "project_type" TEXT CHECK ("project_type" IS NULL OR "project_type" IN ('commercial','retail'))`;
+const schemaReady = new WeakMap<D1Database, Promise<void>>();
+async function hasProjectType(database: D1Database): Promise<boolean> {
+  const { results } = await database.prepare('PRAGMA table_info("portfolios")').all<{ name: string }>();
+  return results.some(column => column.name === 'project_type');
+}
+/**
+ * Adds columns introduced after the initial D1 import. Production schema changes are not applied by CI,
+ * so admin writes add them on first use. Concurrent isolates may race; a duplicate column is success.
+ */
+export function ensureSchema(database: D1Database): Promise<void> {
+  let ready = schemaReady.get(database);
+  if (!ready) {
+    ready = (async () => {
+      if (await hasProjectType(database)) return;
+      try {
+        await database.prepare(PROJECT_TYPE_COLUMN).run();
+      } catch (error) {
+        if (!(await hasProjectType(database))) throw error;
+      }
+    })();
+    ready.catch(() => schemaReady.delete(database));
+    schemaReady.set(database, ready);
+  }
+  return ready;
 }
 class Query<T extends Table> implements PromiseLike<Result<Rows[T][]>> {
   private filters: string[] = [];
@@ -78,6 +105,7 @@ class Query<T extends Table> implements PromiseLike<Result<Rows[T][]>> {
   delete() { if (!this.admin) throw new Error('읽기 전용 연결입니다.'); this.operation = 'delete'; return this; }
   private async execute(): Promise<Result<Rows[T][]>> {
     try {
+      if (this.admin && this.table === 'portfolios') await ensureSchema(this.database);
       const table = `"${this.table}"`;
       const where = this.filters.length ? ` WHERE ${this.filters.join(' AND ')}` : '';
       let statements: D1PreparedStatement[];
@@ -116,6 +144,57 @@ class Query<T extends Table> implements PromiseLike<Result<Rows[T][]>> {
     return this.execute().then(fulfilled, rejected);
   }
 }
+/** Moves portfolios between project types and reorders them in one atomic batch. */
+function isPlacement(value: unknown): value is PortfolioPlacement {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Record<string, unknown>;
+  return typeof item.id === 'string' && item.id.length > 0 &&
+    (item.project_type === null || isProjectType(item.project_type)) &&
+    Number.isSafeInteger(item.sort_order);
+}
+async function placePortfolios(database: D1Database, input: unknown[]): Promise<{ error: { message: string } | null }> {
+  const placements = input.filter(isPlacement);
+  if (placements.length !== input.length || new Set(placements.map(item => item.id)).size !== placements.length) {
+    return { error: { message: '유효하지 않은 정렬 데이터입니다.' } };
+  }
+  if (!placements.length) return { error: null };
+  try {
+    await ensureSchema(database);
+    const ids = placements.map(item => item.id);
+    const found = await database.prepare(`SELECT COUNT(*) AS "count" FROM "portfolios" WHERE "id" IN (${ids.map(() => '?').join(',')})`).bind(...ids).first<{ count: number }>();
+    if (found?.count !== ids.length) return { error: { message: '삭제되었거나 없는 프로젝트가 있습니다. 새로고침 후 다시 시도하세요.' } };
+    await database.batch(placements.map(item =>
+      database.prepare('UPDATE "portfolios" SET "project_type" = ?, "sort_order" = ? WHERE "id" = ?').bind(item.project_type, item.sort_order, item.id)));
+    return { error: null };
+  } catch {
+    return { error: { message: '정렬을 저장하지 못했습니다.' } };
+  }
+}
+/** Rewrites sort_order for services or social links in one atomic batch. */
+async function reorder(database: D1Database, table: 'services' | 'social_links', input: unknown[]): Promise<{ error: { message: string } | null }> {
+  const ids = input.filter((id): id is string => typeof id === 'string' && id.length > 0);
+  if (ids.length !== input.length || new Set(ids).size !== ids.length) return { error: { message: '유효하지 않은 정렬 데이터입니다.' } };
+  if (!ids.length) return { error: null };
+  try {
+    const found = await database.prepare(`SELECT COUNT(*) AS "count" FROM "${table}" WHERE "id" IN (${ids.map(() => '?').join(',')})`).bind(...ids).first<{ count: number }>();
+    if (found?.count !== ids.length) return { error: { message: '삭제되었거나 없는 항목이 있습니다. 새로고침 후 다시 시도하세요.' } };
+    await database.batch(ids.map((id, index) => database.prepare(`UPDATE "${table}" SET "sort_order" = ? WHERE "id" = ?`).bind(index, id)));
+    return { error: null };
+  } catch {
+    return { error: { message: '순서를 저장하지 못했습니다.' } };
+  }
+}
 export function databaseClient(database: D1Database, admin = false) {
-  return { from: <T extends Table>(table: T) => new Query(database, table, admin) };
+  return {
+    from: <T extends Table>(table: T) => new Query(database, table, admin),
+    placePortfolios: (placements: unknown[]) => {
+      if (!admin) throw new Error('읽기 전용 연결입니다.');
+      return placePortfolios(database, placements);
+    },
+    /** `ids` in their new order; each gets its index as sort_order. */
+    reorder: (table: 'services' | 'social_links', ids: unknown[]) => {
+      if (!admin) throw new Error('읽기 전용 연결입니다.');
+      return reorder(database, table, ids);
+    },
+  };
 }

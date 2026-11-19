@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_URL } from "@/lib/site";
 import { contentDb } from "@/lib/database";
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, toProjectType } from "@/lib/project-types";
 import { toPlainText } from "@/lib/text";
 
 export const metadata: Metadata = {
@@ -34,8 +35,20 @@ async function getPortfolios() {
   return data || [];
 }
 
-export default async function WorkPage() {
-  const portfolios = await getPortfolios();
+type PageProps = { searchParams: Promise<{ type?: string }> };
+
+export default async function WorkPage({ searchParams }: PageProps) {
+  const [portfolios, { type }] = await Promise.all([getPortfolios(), searchParams]);
+  const selectedType = toProjectType(type);
+  // Tabs appear once projects are classified, so an unclassified site looks unchanged.
+  const showTabs = portfolios.some((item) => toProjectType(item.project_type) !== null);
+  const filtered = showTabs && selectedType
+    ? portfolios.filter((item) => toProjectType(item.project_type) === selectedType)
+    : portfolios;
+  const tabs = [
+    { href: "/work", label: "All", active: !selectedType },
+    ...PROJECT_TYPES.map((value) => ({ href: `/work?type=${value}`, label: PROJECT_TYPE_LABELS[value], active: selectedType === value })),
+  ];
 
   const fallbackProjects = [
     { id: '1', title: 'Project 1', category: 'Branding', description: '브랜드 아이덴티티 디자인', image_url: null },
@@ -44,7 +57,7 @@ export default async function WorkPage() {
     { id: '4', title: 'Project 4', category: 'Branding', description: '모션 브랜딩', image_url: null },
   ];
 
-  const projects = portfolios.length > 0 ? portfolios : fallbackProjects;
+  const projects = portfolios.length > 0 ? filtered : fallbackProjects;
 
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-black">
@@ -58,6 +71,30 @@ export default async function WorkPage() {
               공간에 생명을 불어넣는 사인 디자인. 브랜드의 첫인상을 만듭니다.
             </p>
           </div>
+
+          {showTabs && (
+            <nav className="-mx-6 mb-10 flex gap-2 overflow-x-auto px-6 pb-1" aria-label="프로젝트 분류">
+              {tabs.map((tab) => (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  scroll={false}
+                  aria-current={tab.active ? "page" : undefined}
+                  className={`shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
+                    tab.active
+                      ? "border-white bg-white text-black"
+                      : "border-white/15 text-gray-400 hover:border-white/40 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+
+          {projects.length === 0 && (
+            <p className="py-20 text-center text-gray-500">이 분류에 등록된 프로젝트가 없습니다.</p>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (

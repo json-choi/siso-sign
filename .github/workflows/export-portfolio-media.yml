@@ -1,5 +1,5 @@
 name: Export portfolio media
-# Manual only. Collects published portfolio photos from the live site (public
+# Collects published portfolio photos from the live site (public
 # pages only, no secrets) and attaches them to the run for one day, for making
 # marketing material outside the site.
 on:
@@ -12,7 +12,7 @@ on:
         description: Width to download (a size the media route serves)
         default: "1920"
 permissions:
-  contents: read
+  contents: write
 jobs:
   export:
     runs-on: ubuntu-24.04
@@ -64,6 +64,19 @@ jobs:
           EOF
           node export.mjs
           du -sh media
+      # Also published as a hidden ref (not a branch) for tools that cannot reach
+      # artifact storage; fetch with: git fetch origin refs/tmp/portfolio-media
+      - name: Publish to a temporary ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd media
+          git init -q
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git add -A
+          git commit -qm "Portfolio media export ${{ github.run_id }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:refs/tmp/portfolio-media
       - uses: actions/upload-artifact@v4
         with:
           name: portfolio-media

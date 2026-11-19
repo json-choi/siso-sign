@@ -1,4 +1,5 @@
 import { contentDb } from "@/lib/database";
+import TrackedContactLink from '@/components/analytics/TrackedContactLink';
 
 async function getSettings() {
   const { data } = await contentDb
@@ -32,6 +33,15 @@ async function getSocialLinks() {
   return data || [];
 }
 
+/** Analytics channel name for a social link, e.g. "KakaoTalk" -> "kakaotalk". */
+const KOREAN_CHANNELS: Record<string, string> = { 카카오톡: 'kakaotalk', 카톡: 'kakaotalk', 인스타그램: 'instagram', 인스타: 'instagram', 블로그: 'blog', 유튜브: 'youtube' };
+
+function channelName(platform: string): string {
+  const korean = KOREAN_CHANNELS[platform.trim()];
+  if (korean) return korean;
+  return platform.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 30) || 'social';
+}
+
 export default async function Footer() {
   const [settings, socialLinks] = await Promise.all([
     getSettings(),
@@ -59,8 +69,9 @@ export default async function Footer() {
 
           <div className="flex flex-wrap gap-x-8 gap-y-4 items-center">
             {socialLinks.map((link) => (
-              <a
+              <TrackedContactLink
                 key={link.platform}
+                channel={channelName(link.platform)}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -68,7 +79,7 @@ export default async function Footer() {
               >
                 <span className="capitalize">{link.platform}</span>
                 <span className="block w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
+              </TrackedContactLink>
             ))}
           </div>
         </div>

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { getPlatformProxy } from 'wrangler';
 import type { D1Database } from '@cloudflare/workers-types';
 import { databaseClient, ensureSchema } from '../src/lib/database-core';
+import { deviceOf, isBot, kstDay, recordVisit, sourceOf, summarize } from '../src/lib/analytics';
 
 const directory = await mkdtemp(join(tmpdir(), 'siso-d1-test-'));
 const configPath = join(directory, 'wrangler.json');
@@ -70,5 +71,34 @@ try {
   await admin.from('portfolios').delete().eq('id', retail.data!.id);
   await admin.from('portfolios').delete().eq('id', inserted.data.id);
   assert.equal((await admin.from('portfolios').select('*', { count: 'exact' })).count, 0);
-  console.log('D1 integration passed: CRUD, visibility, private tables, identifier validation, atomic bulk rollback, stable IDs, arrays/booleans, project type schema and placement, reordering.');
+  // Visit analytics: daily unique visitors, sources, devices, contact clicks.
+  const now = Date.UTC(2026, 10, 19, 3, 0, 0);
+  const iphone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148';
+  const mac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15';
+  const visit = (path: string, ip: string, ua: string, referrer: string | null, at = now, query = '') => recordVisit(platform.env.DB, {
+    kind: 'view', path, url: new URL(`https://www.siso-sign.com${path}${query}`), referrer, userAgent: ua, ip, country: 'KR', salt: 'test', now: at,
+  });
+  await visit('/', '1.1.1.1', iphone, 'https://l.instagram.com/');
+  await visit('/work', '1.1.1.1', iphone, 'https://www.siso-sign.com/');
+  await visit('/', '2.2.2.2', mac, null, now, '?utm_source=ig&utm_campaign=launch');
+  await visit('/', '1.1.1.1', iphone, null, now - 86_400_000);
+  await visit('/', '9.9.9.9', mac, null, now - 8 * 86_400_000);
+  await recordVisit(platform.env.DB, { kind: 'contact', path: 'instagram', url: new URL('https://www.siso-sign.com/contact'), referrer: null, userAgent: iphone, ip: '1.1.1.1', country: null, salt: 'test', now });
+  const week = await summarize(platform.env.DB, 7, now);
+  assert.equal(week.to, kstDay(now));
+  assert.equal(week.daily.length, 7);
+  assert.equal(week.views, 4);
+  assert.equal(week.visitors, 3); // two people today, one of them again yesterday
+  assert.equal(week.contacts, 1);
+  assert.deepEqual(week.previous, { visitors: 1, views: 1, contacts: 0 });
+  assert.deepEqual(week.daily.at(-1), { day: kstDay(now), visitors: 2, views: 3 });
+  assert.deepEqual(Object.fromEntries(week.sources.map((r) => [r.key, r.count])), { instagram: 1, ig: 1, direct: 1 });
+  assert.deepEqual(Object.fromEntries(week.devices.map((r) => [r.key, r.count])), { mobile: 2, desktop: 1 });
+  assert.deepEqual(week.pages[0], { key: '/', count: 3 });
+  assert.deepEqual(week.contactChannels, [{ key: 'instagram', count: 1 }]);
+  assert.equal(kstDay(Date.UTC(2026, 10, 18, 15, 30)), '2026-11-19'); // 00:30 KST belongs to the next day
+  assert.equal(sourceOf(new URL('https://www.siso-sign.com/'), 'https://m.search.naver.com/x'), 'naver');
+  assert.ok(isBot('facebookexternalhit/1.1') && isBot('') && !isBot(iphone));
+  assert.equal(deviceOf('Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)'), 'tablet');
+  console.log('D1 integration passed: CRUD, visibility, private tables, identifier validation, atomic bulk rollback, stable IDs, arrays/booleans, project type schema and placement, reordering, visit analytics.');
 } finally { await platform.dispose(); await rm(directory, { recursive: true, force: true }); }

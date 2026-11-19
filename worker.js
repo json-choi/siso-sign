@@ -1,7 +1,8 @@
 import handler from "vinext/server/fetch-handler";
+import { trackPageView } from "./src/lib/analytics-worker";
 
 export default {
-  fetch(request, env, ctx) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.hostname === "siso-sign.com") {
       url.protocol = "https:";
@@ -13,6 +14,9 @@ export default {
     if (url.pathname.startsWith("/_next/static/")) {
       return env.ASSETS.fetch(request);
     }
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request, env, ctx);
+    // Visit analytics run after the response is sent and never fail it.
+    ctx.waitUntil(trackPageView(request, response, env).catch((error) => console.error("analytics", error)));
+    return response;
   },
 };

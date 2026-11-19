@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from '@/components/MediaImage';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -156,7 +156,7 @@ export default async function ProjectPage({ params }: PageProps) {
                         src={item.image_url}
                         alt={item.title}
                         fill
-                        unoptimized={item.image_url.startsWith('/media/')}
+                        sizes="(min-width: 768px) 33vw, 100vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from '@/components/MediaImage';
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { toPlainText } from "@/lib/text";
@@ -27,7 +27,6 @@ export default function ProjectCard({ project, className }: { project: WorkProje
           alt={project.title}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 45vw, 80vw"
-          unoptimized={project.image_url.startsWith("/media/")}
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           draggable={false}
         />

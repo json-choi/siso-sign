@@ -5,7 +5,7 @@ import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, us
 import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ImagePlus, Loader2, Star, X } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/MediaImage';
 import { cn } from '@/lib/cn';
 import { uploadImage } from '@/lib/upload';
 import type { DragEndEvent } from '@dnd-kit/core';
@@ -158,7 +158,7 @@ function SortableImage({ url, index, onRemove, onCover }: SortableImageProps) {
       className={cn('relative aspect-square overflow-hidden rounded-lg bg-white/[0.06]', isDragging && 'z-10 opacity-70 ring-2 ring-primary')}
     >
       <div {...attributes} {...listeners} className="absolute inset-0 cursor-grab touch-manipulation active:cursor-grabbing" aria-label={`이미지 ${index + 1} 순서 변경`}>
-        <Image src={url} alt="" fill unoptimized sizes="160px" className="object-cover" draggable={false} />
+        <Image src={url} alt="" fill sizes="160px" className="object-cover" draggable={false} />
       </div>
       {index === 0 ? (
         <span className="pointer-events-none absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-white">대표</span>

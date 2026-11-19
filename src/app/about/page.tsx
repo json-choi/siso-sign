@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from '@/components/MediaImage';
 import { DynamicIcon } from "@/components/admin/IconPicker";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
@@ -82,7 +82,7 @@ export default async function AboutPage() {
                 src={settings.about_image_url}
                 alt="About siso-sign"
                 fill
-                unoptimized={settings.about_image_url.startsWith('/media/')}
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
               />
             </div>

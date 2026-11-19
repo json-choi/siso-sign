@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/MediaImage';
 import { inputClass } from '@/components/admin/ui';
 import { cn } from '@/lib/cn';
 import { uploadImage } from '@/lib/upload';
@@ -115,7 +115,7 @@ export default function ImageUploadField({
             src={value}
             alt="미리보기"
             fill
-            unoptimized={value.startsWith('/media/')}
+            sizes="448px"
             className="object-contain"
           />
         </div>

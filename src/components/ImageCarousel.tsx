@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/MediaImage';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -31,9 +31,9 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
           src={validImages[0]}
           alt={alt}
           fill
-          unoptimized={validImages[0].startsWith('/media/')}
           className="object-cover"
           priority
+          sizes="(min-width: 1024px) 66vw, 100vw"
         />
       </div>
     );
@@ -87,7 +87,7 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
               src={validImages[currentIndex]}
               alt={`${alt} - ${currentIndex + 1}`}
               fill
-              unoptimized={validImages[currentIndex].startsWith('/media/')}
+              sizes="(min-width: 1024px) 66vw, 100vw"
               className="object-cover"
               priority
             />

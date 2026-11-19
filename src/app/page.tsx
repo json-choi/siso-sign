@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from '@/components/MediaImage';
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Footer from "@/components/layout/Footer";
@@ -197,7 +197,7 @@ export default async function Home() {
                       src={project.image_url}
                       alt={project.title}
                       fill
-                      unoptimized={project.image_url.startsWith('/media/')}
+                      sizes="(min-width: 768px) 50vw, 100vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (

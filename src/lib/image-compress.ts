@@ -4,11 +4,11 @@
  */
 export async function compressImageToWebP(
   file: File,
-  maxWidth = 1920,
-  quality = 1
+  maxWidth = 2400,
+  quality = 0.85
 ): Promise<File> {
-  // 이미 작은 WebP 파일이면 그대로 반환
-  if (file.type === 'image/webp' && file.size < 1024 * 1024) {
+  // 이미 작은 WebP 파일이면 그대로 반환 (quality 1은 사실상 무손실이라 파일이 수 MB가 되었음)
+  if (file.type === 'image/webp' && file.size < 600 * 1024) {
     return file;
   }
 

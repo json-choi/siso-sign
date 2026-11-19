@@ -157,7 +157,7 @@ export default function PortfolioForm({ portfolio, defaultType = null }: Portfol
             </div>
           </Card>
 
-          <Card title="사진" description="최대 10장 · 자동으로 압축됩니다.">
+          <Card title="사진" description="최대 10장 · 원본 화질로 저장되고, 보는 화면에 맞는 크기로 자동 변환됩니다.">
             <MultiImageUpload value={form.images} onChange={(images) => set('images', images)} />
           </Card>
         </div>

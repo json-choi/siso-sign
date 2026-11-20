@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { getPlatformProxy } from 'wrangler';
 import type { D1Database } from '@cloudflare/workers-types';
 import { databaseClient, ensureSchema } from '../src/lib/database-core';
+import { MAX_ZOOM, parseImageSettings } from '../src/lib/image-display';
+import { parsePortfolioInput } from '../src/lib/portfolio-input';
 import { deviceOf, isBot, isBotRequest, kstDay, recordVisit, sourceOf, summarize } from '../src/lib/analytics';
 
 const directory = await mkdtemp(join(tmpdir(), 'siso-d1-test-'));
@@ -59,6 +61,16 @@ try {
   ])).error);
   assert.equal((await admin.from('portfolios').eq('id', inserted.data.id).single()).data?.sort_order, 0);
   assert.throws(() => publicDb.placePortfolios([]));
+  // Photo framing: crop per image as a JSON object and a detail-page ratio.
+  const framed = await admin.from('portfolios').update({ image_settings: { 'one.webp': { x: 30, y: 70, zoom: 1.4 } }, display_ratio: '3:4' }).eq('id', inserted.data.id).single();
+  assert.deepEqual(framed.data?.image_settings, { 'one.webp': { x: 30, y: 70, zoom: 1.4 } });
+  assert.equal(framed.data?.display_ratio, '3:4');
+  assert.ok((await admin.from('portfolios').update({ display_ratio: '2:1' }).eq('id', inserted.data.id)).error);
+  assert.deepEqual(parseImageSettings({ 'a.webp': { x: 140, y: -5, zoom: 9 }, '': { x: 1 }, 'b.webp': 'bad' }), { 'a.webp': { x: 100, y: 0, zoom: MAX_ZOOM } });
+  const parsedInput = parsePortfolioInput({ images: ['one.webp'], image_settings: { 'one.webp': { x: 10, y: 20, zoom: 1 }, 'gone.webp': { x: 1, y: 1, zoom: 1 } }, display_ratio: 'original' }, { requireTitle: false });
+  assert.ok('data' in parsedInput);
+  assert.deepEqual(Object.keys(parsedInput.data.image_settings as object), ['one.webp']);
+  assert.ok('error' in parsePortfolioInput({ display_ratio: 'wide' }, { requireTitle: false }));
   const first = await admin.from('services').insert({ title: 'A', sort_order: 0 }).single();
   const second = await admin.from('services').insert({ title: 'B', sort_order: 1 }).single();
   assert.equal((await admin.reorder('services', [second.data!.id, first.data!.id])).error, null);
@@ -116,5 +128,5 @@ try {
   Object.defineProperty(verified, 'cf', { value: { verifiedBotCategory: 'Search Engine Crawler' } });
   assert.ok(isBotRequest(verified), 'Cloudflare verified bots are skipped');
   assert.equal(deviceOf('Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)'), 'tablet');
-  console.log('D1 integration passed: CRUD, visibility, private tables, identifier validation, atomic bulk rollback, stable IDs, arrays/booleans, project type schema and placement, reordering, visit analytics.');
+  console.log('D1 integration passed: CRUD, visibility, private tables, identifier validation, atomic bulk rollback, stable IDs, arrays/booleans, project type schema and placement, photo framing, reordering, visit analytics.');
 } finally { await platform.dispose(); await rm(directory, { recursive: true, force: true }); }

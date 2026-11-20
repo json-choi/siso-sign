@@ -1,7 +1,8 @@
+import { isDisplayRatio, parseImageSettings } from '@/lib/image-display';
 import { isProjectType } from '@/lib/project-types';
 
 const editableFields = [
-  'title', 'description', 'category', 'project_type', 'image_url', 'images',
+  'title', 'description', 'category', 'project_type', 'image_url', 'images', 'image_settings', 'display_ratio',
   'thumbnail_url', 'tags', 'is_featured', 'is_published', 'sort_order',
 ] as const;
 
@@ -22,6 +23,15 @@ export function parsePortfolioInput(body: unknown, { requireTitle }: { requireTi
   }
   if ('project_type' in data && data.project_type !== null && !isProjectType(data.project_type)) {
     return { error: '프로젝트 분류가 올바르지 않습니다.' };
+  }
+  if ('display_ratio' in data && data.display_ratio !== null && !isDisplayRatio(data.display_ratio)) {
+    return { error: '사진 비율이 올바르지 않습니다.' };
+  }
+  if ('image_settings' in data) {
+    // Keep only settings for photos the project still has.
+    const images = Array.isArray(data.images) ? new Set(data.images) : null;
+    const settings = parseImageSettings(data.image_settings);
+    data.image_settings = Object.fromEntries(Object.entries(settings).filter(([url]) => !images || images.has(url)));
   }
   if ('sort_order' in data && !Number.isSafeInteger(data.sort_order)) {
     return { error: '정렬 순서가 올바르지 않습니다.' };

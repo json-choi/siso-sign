@@ -9,7 +9,9 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import { Button, ButtonLink, Card, Field, PageHeader, Switch, TextInput } from '@/components/admin/ui';
 import { adminRequest, errorMessage } from '@/lib/admin-api';
 import { cn } from '@/lib/cn';
+import { DISPLAY_RATIOS, DISPLAY_RATIO_LABELS, parseImageSettings, toDisplayRatio } from '@/lib/image-display';
 import { PROJECT_TYPES, PROJECT_TYPE_LABELS, toProjectType } from '@/lib/project-types';
+import type { DisplayRatio, ImageSettings } from '@/lib/image-display';
 import type { ProjectType } from '@/lib/project-types';
 import type { Portfolio } from '@/types/database';
 
@@ -19,6 +21,8 @@ interface FormState {
   project_type: ProjectType | null;
   description: string;
   images: string[];
+  image_settings: ImageSettings;
+  display_ratio: DisplayRatio;
   is_published: boolean;
   is_featured: boolean;
 }
@@ -30,6 +34,8 @@ function initialState(portfolio: Portfolio | null, defaultType: ProjectType | nu
     project_type: portfolio ? toProjectType(portfolio.project_type) : defaultType,
     description: portfolio?.description ?? '',
     images: portfolio?.images?.length ? portfolio.images : portfolio?.image_url ? [portfolio.image_url] : [],
+    image_settings: parseImageSettings(portfolio?.image_settings),
+    display_ratio: toDisplayRatio(portfolio?.display_ratio),
     is_published: portfolio?.is_published ?? true,
     is_featured: portfolio?.is_featured ?? false,
   };
@@ -71,6 +77,8 @@ export default function PortfolioForm({ portfolio, defaultType = null }: Portfol
       description: form.description,
       images: form.images,
       image_url: form.images[0] ?? null,
+      image_settings: form.image_settings,
+      display_ratio: form.display_ratio,
       is_published: form.is_published,
       is_featured: form.is_featured,
     };
@@ -157,8 +165,36 @@ export default function PortfolioForm({ portfolio, defaultType = null }: Portfol
             </div>
           </Card>
 
-          <Card title="사진" description="최대 10장 · 원본 화질로 저장되고, 보는 화면에 맞는 크기로 자동 변환됩니다.">
-            <MultiImageUpload value={form.images} onChange={(images) => set('images', images)} />
+          <Card title="사진" description="최대 10장 · 원본 화질로 저장되고, 보는 화면에 맞는 크기로 자동 변환됩니다. 사진마다 보일 영역을 조정할 수 있습니다.">
+            <MultiImageUpload
+              value={form.images}
+              onChange={(images) => set('images', images)}
+              settings={form.image_settings}
+              onSettingsChange={(settings) => set('image_settings', settings)}
+              ratio={form.display_ratio}
+              onRatioChange={(ratio) => set('display_ratio', ratio)}
+            />
+            <div className="mt-5 border-t border-white/[0.06] pt-4">
+              <p className="mb-2 text-sm font-medium text-gray-300">상세 페이지 사진 비율</p>
+              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="상세 페이지 사진 비율">
+                {DISPLAY_RATIOS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={form.display_ratio === option}
+                    onClick={() => set('display_ratio', option)}
+                    className={cn(
+                      'rounded-lg border px-3 py-1.5 text-sm transition-colors',
+                      form.display_ratio === option ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-gray-400 hover:border-white/25 hover:text-white',
+                    )}
+                  >
+                    {DISPLAY_RATIO_LABELS[option]}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-gray-500">목록과 홈 화면 카드는 항상 4:3이고, 상세 페이지 사진에만 적용됩니다. 원본 비율은 사진을 자르지 않습니다.</p>
+            </div>
           </Card>
         </div>
 

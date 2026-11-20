@@ -12,18 +12,20 @@ type Rows = {
 type Table = keyof Rows;
 type Result<T> = { data: T | null; error: { message: string } | null; count: number | null };
 const columns: Record<Table, string[]> = {
-  portfolios: ['id','title','description','category','project_type','image_url','images','thumbnail_url','tags','is_featured','is_published','sort_order','created_at','updated_at'],
+  portfolios: ['id','title','description','category','project_type','image_url','images','image_settings','display_ratio','thumbnail_url','tags','is_featured','is_published','sort_order','created_at','updated_at'],
   services: ['id','title','description','icon','sort_order','is_active','created_at','updated_at'],
   site_settings: ['id','key','value','type','description','updated_at'],
   social_links: ['id','platform','url','icon','sort_order','is_active','created_at'],
   admin_password: ['id','password_hash','created_at','updated_at'],
 };
-const jsonColumns = new Set(['images','tags']);
+const jsonColumns = new Set(['images','tags','image_settings']);
 const booleanColumns = new Set(['is_featured','is_published','is_active']);
 function encode(value: unknown): string | number | null {
   if (value === null) return null;
   if (typeof value === 'boolean') return Number(value);
   if (Array.isArray(value) && value.every(v => typeof v === 'string')) return JSON.stringify(value);
+  // Plain objects are stored as JSON (image_settings); callers validate their shape.
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) return JSON.stringify(value);
   if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) return value;
   throw new Error('지원하지 않는 데이터 형식입니다.');
 }
@@ -32,11 +34,16 @@ function decode<T extends Table>(row: Record<string, unknown>): Rows[T] {
     value === null ? null : jsonColumns.has(key) ? JSON.parse(String(value)) : booleanColumns.has(key) ? Boolean(value) : value,
   ])) as unknown as Rows[T];
 }
-const PROJECT_TYPE_COLUMN = `ALTER TABLE "portfolios" ADD COLUMN "project_type" TEXT CHECK ("project_type" IS NULL OR "project_type" IN ('commercial','retail'))`;
+/** Columns added after the initial D1 import, with the statement that adds each. */
+const ADDED_COLUMNS: [string, string][] = [
+  ['project_type', `ALTER TABLE "portfolios" ADD COLUMN "project_type" TEXT CHECK ("project_type" IS NULL OR "project_type" IN ('commercial','retail'))`],
+  ['image_settings', `ALTER TABLE "portfolios" ADD COLUMN "image_settings" TEXT CHECK ("image_settings" IS NULL OR (json_valid("image_settings") AND json_type("image_settings") = 'object'))`],
+  ['display_ratio', `ALTER TABLE "portfolios" ADD COLUMN "display_ratio" TEXT CHECK ("display_ratio" IS NULL OR "display_ratio" IN ('4:3','1:1','3:4','16:9','original'))`],
+];
 const schemaReady = new WeakMap<D1Database, Promise<void>>();
-async function hasProjectType(database: D1Database): Promise<boolean> {
+async function portfolioColumns(database: D1Database): Promise<Set<string>> {
   const { results } = await database.prepare('PRAGMA table_info("portfolios")').all<{ name: string }>();
-  return results.some(column => column.name === 'project_type');
+  return new Set(results.map(column => column.name));
 }
 /**
  * Adds columns introduced after the initial D1 import. Production schema changes are not applied by CI,
@@ -46,11 +53,14 @@ export function ensureSchema(database: D1Database): Promise<void> {
   let ready = schemaReady.get(database);
   if (!ready) {
     ready = (async () => {
-      if (await hasProjectType(database)) return;
-      try {
-        await database.prepare(PROJECT_TYPE_COLUMN).run();
-      } catch (error) {
-        if (!(await hasProjectType(database))) throw error;
+      const existing = await portfolioColumns(database);
+      for (const [name, sql] of ADDED_COLUMNS) {
+        if (existing.has(name)) continue;
+        try {
+          await database.prepare(sql).run();
+        } catch (error) {
+          if (!(await portfolioColumns(database)).has(name)) throw error;
+        }
       }
     })();
     ready.catch(() => schemaReady.delete(database));

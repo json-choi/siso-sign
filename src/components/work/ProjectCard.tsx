@@ -1,6 +1,7 @@
 import Image from '@/components/MediaImage';
 import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { cropFor, cropStyle } from "@/lib/image-display";
 import { toPlainText } from "@/lib/text";
 
 export interface WorkProject {
@@ -9,6 +10,7 @@ export interface WorkProject {
   category: string | null;
   description: string | null;
   image_url: string | null;
+  image_settings?: unknown;
 }
 
 function hasImage(src: string | null): src is string {
@@ -27,7 +29,8 @@ export default function ProjectCard({ project, className }: { project: WorkProje
           alt={project.title}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 45vw, 80vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-105 transition-[scale] duration-500"
+          style={cropStyle(cropFor(project.image_settings, project.image_url))}
           draggable={false}
         />
       ) : (

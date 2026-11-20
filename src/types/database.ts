@@ -1,4 +1,5 @@
 import type { ProjectType } from '@/lib/project-types';
+import type { DisplayRatio, ImageSettings } from '@/lib/image-display';
 
 export interface Portfolio {
   id: string;
@@ -8,6 +9,9 @@ export interface Portfolio {
   project_type: ProjectType | null;
   image_url: string | null;
   images: string[] | null;
+  /** Crop per image URL; absent on rows read before the column existed. */
+  image_settings?: ImageSettings | null;
+  display_ratio?: DisplayRatio | null;
   thumbnail_url: string | null;
   tags: string[] | null;
   is_featured: boolean;

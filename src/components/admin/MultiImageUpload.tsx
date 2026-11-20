@@ -4,9 +4,12 @@ import { useRef, useState } from 'react';
 import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ImagePlus, Loader2, Star, X } from 'lucide-react';
+import { Crop, ImagePlus, Loader2, Star, X } from 'lucide-react';
 import Image from '@/components/MediaImage';
+import ImageCropEditor from '@/components/admin/ImageCropEditor';
 import { cn } from '@/lib/cn';
+import { cropFor, cropStyle, isDefaultCrop } from '@/lib/image-display';
+import type { DisplayRatio, ImageCrop, ImageSettings } from '@/lib/image-display';
 import { uploadImage } from '@/lib/upload';
 import type { DragEndEvent } from '@dnd-kit/core';
 
@@ -14,9 +17,15 @@ interface MultiImageUploadProps {
   value: string[];
   onChange: (urls: string[]) => void;
   maxImages?: number;
+  /** Crop per image; when given, each photo gets an adjust button. */
+  settings?: ImageSettings;
+  onSettingsChange?: (settings: ImageSettings) => void;
+  ratio?: DisplayRatio;
+  onRatioChange?: (ratio: DisplayRatio) => void;
 }
 
-export default function MultiImageUpload({ value, onChange, maxImages = 10 }: MultiImageUploadProps) {
+export default function MultiImageUpload({ value, onChange, maxImages = 10, settings, onSettingsChange, ratio = '4:3', onRatioChange }: MultiImageUploadProps) {
+  const [editing, setEditing] = useState<string | null>(null);
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
@@ -87,7 +96,15 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
           <SortableContext items={items} strategy={rectSortingStrategy}>
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {items.map((url, index) => (
-                <SortableImage key={url} url={url} index={index} onRemove={remove} onCover={makeCover} />
+                <SortableImage
+                  key={url}
+                  url={url}
+                  index={index}
+                  crop={cropFor(settings, url)}
+                  onRemove={remove}
+                  onCover={makeCover}
+                  onAdjust={onSettingsChange ? setEditing : undefined}
+                />
               ))}
             </ul>
           </SortableContext>
@@ -137,6 +154,28 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
       {items.length > 1 && (
         <p className="text-xs text-gray-500">첫 번째 사진이 대표 이미지입니다. 사진을 길게 눌러(또는 끌어서) 순서를 바꾸세요.</p>
       )}
+      {onSettingsChange && items.length > 0 && (
+        <p className="text-xs text-gray-500">각 사진의 <span className="text-gray-300">조정</span>을 눌러 사이트에서 보일 영역과 확대, 상세 페이지 비율을 정할 수 있습니다.</p>
+      )}
+
+      {onSettingsChange && (
+        <ImageCropEditor
+          url={editing}
+          crop={cropFor(settings, editing)}
+          ratio={ratio}
+          onClose={() => setEditing(null)}
+          onSave={(crop, nextRatio) => {
+            if (editing) {
+              const next = { ...(settings ?? {}) };
+              if (isDefaultCrop(crop)) delete next[editing];
+              else next[editing] = crop;
+              onSettingsChange(next);
+            }
+            if (nextRatio !== ratio) onRatioChange?.(nextRatio);
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -144,11 +183,13 @@ export default function MultiImageUpload({ value, onChange, maxImages = 10 }: Mu
 interface SortableImageProps {
   url: string;
   index: number;
+  crop: ImageCrop;
+  onAdjust?: (url: string) => void;
   onRemove: (url: string) => void;
   onCover: (url: string) => void;
 }
 
-function SortableImage({ url, index, onRemove, onCover }: SortableImageProps) {
+function SortableImage({ url, index, crop, onAdjust, onRemove, onCover }: SortableImageProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: url });
 
   return (
@@ -158,8 +199,22 @@ function SortableImage({ url, index, onRemove, onCover }: SortableImageProps) {
       className={cn('relative aspect-square overflow-hidden rounded-lg bg-white/[0.06]', isDragging && 'z-10 opacity-70 ring-2 ring-primary')}
     >
       <div {...attributes} {...listeners} className="absolute inset-0 cursor-grab touch-manipulation active:cursor-grabbing" aria-label={`이미지 ${index + 1} 순서 변경`}>
-        <Image src={url} alt="" fill sizes="160px" className="object-cover" draggable={false} />
+        <Image src={url} alt="" fill sizes="160px" className="object-cover" style={cropStyle(crop)} draggable={false} />
       </div>
+      {onAdjust && (
+        <button
+          type="button"
+          onClick={() => onAdjust(url)}
+          className={cn(
+            'absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-medium text-white backdrop-blur',
+            isDefaultCrop(crop) ? 'bg-black/60 hover:bg-black/80' : 'bg-primary/90 hover:bg-primary',
+          )}
+          aria-label={`이미지 ${index + 1} 보이는 영역 조정`}
+        >
+          <Crop className="h-3.5 w-3.5" />
+          조정
+        </button>
+      )}
       {index === 0 ? (
         <span className="pointer-events-none absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-white">대표</span>
       ) : (

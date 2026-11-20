@@ -12,7 +12,7 @@ import type { ImageProps } from 'next/image';
  * back to next/image.
  */
 export default function MediaImage({ alt, ...props }: ImageProps) {
-  const { src, fill, sizes, className, priority, width, height, style, draggable } = props;
+  const { src, fill, sizes, className, priority, width, height, style, draggable, onLoad, onError } = props;
   if (!isMediaUrl(src)) return <Image alt={alt} {...props} />;
 
   return (
@@ -28,6 +28,8 @@ export default function MediaImage({ alt, ...props }: ImageProps) {
       fetchPriority={priority ? 'high' : undefined}
       decoding="async"
       draggable={draggable}
+      onLoad={onLoad}
+      onError={onError}
       className={cn(fill && 'absolute inset-0 h-full w-full', className)}
       style={style}
     />

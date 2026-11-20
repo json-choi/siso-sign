@@ -1,129 +1,137 @@
 'use client';
 
 import { useState } from 'react';
-import Image from '@/components/MediaImage';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import Image from '@/components/MediaImage';
+import { aspectRatioOf, cropFor, cropStyle, toDisplayRatio } from '@/lib/image-display';
+import { cn } from '@/lib/cn';
+import type { PanInfo } from 'framer-motion';
 
 interface ImageCarouselProps {
   images: string[];
   alt: string;
+  /** Crop per image URL, from the admin. */
+  settings?: unknown;
+  /** Frame shape for every photo; 'original' shows photos uncropped. */
+  ratio?: unknown;
 }
 
-export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
+/** A swipe counts when it travels this far or flicks this fast. */
+const SWIPE_DISTANCE = 60;
+const SWIPE_VELOCITY = 400;
 
-  const validImages = images?.filter(img => img && (img.startsWith('/media/') || img.startsWith('http'))) || [];
+export default function ImageCarousel({ images, alt, settings, ratio }: ImageCarouselProps) {
+  const [[index, direction], setPage] = useState<[number, number]>([0, 0]);
+  const displayRatio = toDisplayRatio(ratio);
+  const original = displayRatio === 'original';
+  const frameStyle = { aspectRatio: aspectRatioOf(displayRatio) ?? '4 / 3' };
+
+  const validImages = images?.filter((img) => img && (img.startsWith('/media/') || img.startsWith('http'))) || [];
 
   if (validImages.length === 0) {
     return (
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5 flex items-center justify-center">
+      <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-white/5" style={frameStyle}>
         <p className="text-gray-500">이미지가 없습니다</p>
       </div>
     );
   }
 
-  if (validImages.length === 1) {
+  const count = validImages.length;
+  const paginate = (step: number) => setPage(([current]) => [(current + step + count) % count, step]);
+  const goTo = (target: number) => setPage(([current]) => [target, target > current ? 1 : -1]);
+
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.x < -SWIPE_DISTANCE || info.velocity.x < -SWIPE_VELOCITY) paginate(1);
+    else if (info.offset.x > SWIPE_DISTANCE || info.velocity.x > SWIPE_VELOCITY) paginate(-1);
+  };
+
+  const renderImage = (src: string, label: string) => (
+    <Image
+      src={src}
+      alt={label}
+      fill
+      sizes="(min-width: 1024px) 66vw, 100vw"
+      className={cn('pointer-events-none select-none', original ? 'object-contain' : 'object-cover')}
+      style={original ? undefined : cropStyle(cropFor(settings, src))}
+      draggable={false}
+      priority
+    />
+  );
+
+  if (count === 1) {
     return (
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5">
-        <Image
-          src={validImages[0]}
-          alt={alt}
-          fill
-          className="object-cover"
-          priority
-          sizes="(min-width: 1024px) 66vw, 100vw"
-        />
+      <div className="relative overflow-hidden rounded-xl bg-white/5" style={frameStyle}>
+        {renderImage(validImages[0], alt)}
       </div>
     );
   }
 
-  const goToPrevious = () => {
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev === 0 ? validImages.length - 1 : prev - 1));
-  };
-
-  const goToNext = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev === validImages.length - 1 ? 0 : prev + 1));
-  };
-
-  const goToSlide = (index: number) => {
-    setDirection(index > currentIndex ? 1 : -1);
-    setCurrentIndex(index);
-  };
-
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      x: direction > 0 ? -300 : 300,
-      opacity: 0,
-    }),
-  };
-
   return (
     <div className="relative">
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+      <div
+        className="relative overflow-hidden rounded-xl bg-white/5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        style={frameStyle}
+        tabIndex={0}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={`${alt} 사진 ${count}장. 좌우로 밀거나 방향키로 넘기세요.`}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft') paginate(-1);
+          if (event.key === 'ArrowRight') paginate(1);
+        }}
+      >
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
-            key={currentIndex}
+            key={index}
             custom={direction}
-            variants={variants}
+            variants={{
+              enter: (dir: number) => ({ x: dir > 0 ? '100%' : dir < 0 ? '-100%' : 0, opacity: 1 }),
+              center: { x: 0, opacity: 1 },
+              exit: (dir: number) => ({ x: dir > 0 ? '-100%' : '100%', opacity: 1 }),
+            }}
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="absolute inset-0"
+            transition={{ x: { type: 'spring', stiffness: 320, damping: 34 } }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.6}
+            onDragEnd={onDragEnd}
+            className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing"
           >
-            <Image
-              src={validImages[currentIndex]}
-              alt={`${alt} - ${currentIndex + 1}`}
-              fill
-              sizes="(min-width: 1024px) 66vw, 100vw"
-              className="object-cover"
-              priority
-            />
+            {renderImage(validImages[index], `${alt} - ${index + 1}`)}
           </motion.div>
         </AnimatePresence>
 
         <button
-          onClick={goToPrevious}
-          className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+          onClick={() => paginate(-1)}
+          className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
           aria-label="이전 이미지"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="h-5 w-5" />
         </button>
-
         <button
-          onClick={goToNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+          onClick={() => paginate(1)}
+          className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
           aria-label="다음 이미지"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="h-5 w-5" />
         </button>
 
-        <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-sm">
-          {currentIndex + 1} / {validImages.length}
+        <div className="absolute right-3 top-3 z-10 rounded-full bg-black/50 px-2 py-1 text-sm text-white tabular-nums">
+          {index + 1} / {count}
         </div>
       </div>
 
-      <div className="flex justify-center gap-2 mt-4">
-        {validImages.map((_, index) => (
+      <div className="mt-4 flex justify-center gap-2">
+        {validImages.map((_, dot) => (
           <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors ${
-              index === currentIndex ? 'bg-primary' : 'bg-white/30 hover:bg-white/50'
-            }`}
-            aria-label={`${index + 1}번 이미지로 이동`}
+            key={dot}
+            onClick={() => goTo(dot)}
+            className={`h-2 w-2 rounded-full transition-colors ${dot === index ? 'bg-primary' : 'bg-white/30 hover:bg-white/50'}`}
+            aria-label={`${dot + 1}번 이미지로 이동`}
+            aria-current={dot === index}
           />
         ))}
       </div>

@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { contentDb } from "@/lib/database";
+import { cropFor, cropStyle } from "@/lib/image-display";
 import { toPlainText } from "@/lib/text";
 
 export const revalidate = 0;
@@ -198,7 +199,8 @@ export default async function Home() {
                       alt={project.title}
                       fill
                       sizes="(min-width: 768px) 50vw, 100vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover group-hover:scale-105 transition-[scale] duration-500"
+                      style={cropStyle(cropFor('image_settings' in project ? project.image_settings : null, project.image_url))}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
